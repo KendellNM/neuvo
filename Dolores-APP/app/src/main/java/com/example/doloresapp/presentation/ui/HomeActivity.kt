@@ -10,12 +10,16 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.doloresapp.LoginActivity
 import com.example.doloresapp.R
 import com.example.doloresapp.data.local.TokenStore
+import com.example.doloresapp.data.remote.NetworkClient
+import com.example.doloresapp.data.remote.UserApi
 import com.example.doloresapp.utils.ApiConstants
 import com.example.doloresapp.utils.RoleManager
 import com.example.doloresapp.utils.UserRole
+import kotlinx.coroutines.launch
 
 /**
  * Activity principal que muestra opciones según el rol del usuario
@@ -38,6 +42,34 @@ class HomeActivity : AppCompatActivity() {
             UserRole.ADMIN -> setupAdminUI()
             UserRole.FARMACEUTICO -> setupFarmaceuticoUI()
         }
+        
+        // Cargar nombre del usuario desde el backend
+        loadUserName()
+    }
+    
+    private fun loadUserName() {
+        lifecycleScope.launch {
+            try {
+                val api = NetworkClient.createService(UserApi::class.java)
+                val user = api.getCurrentUser()
+                
+                // Obtener el nombre a mostrar
+                val displayName = when {
+                    !user.nombres.isNullOrBlank() && !user.apellidos.isNullOrBlank() -> 
+                        "${user.nombres} ${user.apellidos}"
+                    !user.nombres.isNullOrBlank() -> user.nombres
+                    !user.usuario.isNullOrBlank() -> user.usuario.replaceFirstChar { it.uppercase() }
+                    !user.username.isNullOrBlank() -> user.username.replaceFirstChar { it.uppercase() }
+                    else -> null
+                }
+                
+                displayName?.let {
+                    tvBienvenida.text = "Hola, $it"
+                }
+            } catch (e: Exception) {
+                // Si falla, mantener el nombre extraído del email
+            }
+        }
     }
     
     private fun setupClienteUI() {
@@ -48,9 +80,10 @@ class HomeActivity : AppCompatActivity() {
         tvRol = findViewById(R.id.tv_rol)
         
         val prefs = getSharedPreferences(ApiConstants.Prefs.NAME, MODE_PRIVATE)
-        val userName = prefs.getString(ApiConstants.Prefs.USER_EMAIL, "Usuario")
+        val userEmail = prefs.getString(ApiConstants.Prefs.USER_EMAIL, "Usuario") ?: "Usuario"
+        val displayName = extractNameFromEmail(userEmail)
         
-        tvBienvenida.text = "Bienvenido, $userName"
+        tvBienvenida.text = "Hola, $displayName"
         tvRol.text = "👤 Cliente"
         
         // Botón logout
@@ -106,9 +139,10 @@ class HomeActivity : AppCompatActivity() {
         tvRol = findViewById(R.id.tv_rol)
         
         val prefs = getSharedPreferences(ApiConstants.Prefs.NAME, MODE_PRIVATE)
-        val userName = prefs.getString(ApiConstants.Prefs.USER_EMAIL, "Repartidor")
+        val userEmail = prefs.getString(ApiConstants.Prefs.USER_EMAIL, "Repartidor") ?: "Repartidor"
+        val displayName = extractNameFromEmail(userEmail)
         
-        tvBienvenida.text = "Panel de Entregas"
+        tvBienvenida.text = "Hola, $displayName"
         tvRol.text = "🚚 Repartidor"
         
         // Botón logout
@@ -143,9 +177,10 @@ class HomeActivity : AppCompatActivity() {
         tvRol = findViewById(R.id.tv_rol)
         
         val prefs = getSharedPreferences(ApiConstants.Prefs.NAME, MODE_PRIVATE)
-        val userName = prefs.getString(ApiConstants.Prefs.USER_EMAIL, "Admin")
+        val userEmail = prefs.getString(ApiConstants.Prefs.USER_EMAIL, "Admin") ?: "Admin"
+        val displayName = extractNameFromEmail(userEmail)
         
-        tvBienvenida.text = "Panel de Administración"
+        tvBienvenida.text = "Hola, $displayName"
         tvRol.text = "👨‍💼 Administrador"
         
         // Botón logout
@@ -190,9 +225,10 @@ class HomeActivity : AppCompatActivity() {
         tvRol = findViewById(R.id.tv_rol)
         
         val prefs = getSharedPreferences(ApiConstants.Prefs.NAME, MODE_PRIVATE)
-        val userName = prefs.getString(ApiConstants.Prefs.USER_EMAIL, "Farmacéutico")
+        val userEmail = prefs.getString(ApiConstants.Prefs.USER_EMAIL, "Farmacéutico") ?: "Farmacéutico"
+        val displayName = extractNameFromEmail(userEmail)
         
-        tvBienvenida.text = "Panel de Farmacéutico"
+        tvBienvenida.text = "Hola, $displayName"
         tvRol.text = "💊 Farmacéutico"
         
         // Botón logout
@@ -228,9 +264,17 @@ class HomeActivity : AppCompatActivity() {
         val rootView = findViewById<View>(rootViewId)
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(0, systemBars.top, 0, systemBars.bottom)
+            // Solo aplicar padding inferior para la barra de navegación
+            // El header se extiende hasta arriba
+            v.setPadding(0, 0, 0, systemBars.bottom)
             insets
         }
+    }
+    
+    private fun extractNameFromEmail(email: String): String {
+        // Extraer la parte antes del @ y capitalizar
+        val namePart = email.substringBefore("@")
+        return namePart.replaceFirstChar { it.uppercase() }
     }
     
     private fun showLogoutDialog() {

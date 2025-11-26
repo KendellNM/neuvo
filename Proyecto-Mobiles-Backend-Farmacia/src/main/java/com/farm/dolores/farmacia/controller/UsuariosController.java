@@ -1,16 +1,22 @@
 package com.farm.dolores.farmacia.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import com.farm.dolores.farmacia.entity.Usuarios;
+import com.farm.dolores.farmacia.repository.UsuariosRepository;
 import com.farm.dolores.farmacia.service.UsuariosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -22,6 +28,40 @@ public class UsuariosController {
 
     @Autowired
     private UsuariosService usuariosService;
+    
+    @Autowired
+    private UsuariosRepository usuariosRepository;
+
+    @Operation(summary = "Obtener usuario actual", description = "Devuelve la información del usuario autenticado")
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            
+            Optional<Usuarios> userOpt = usuariosRepository.findByCorreo(username);
+            if (userOpt.isEmpty()) {
+                userOpt = usuariosRepository.findByUsuario(username);
+            }
+            
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+            }
+            
+            Usuarios user = userOpt.get();
+            
+            // Crear respuesta con los campos necesarios
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", user.getIdUsuarios());
+            response.put("usuario", user.getUsuario());
+            response.put("correo", user.getCorreo());
+            response.put("estado", user.getEstado());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener usuario");
+        }
+    }
 
     @GetMapping
     public ResponseEntity<List<Usuarios>> readAll() {

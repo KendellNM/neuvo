@@ -7,6 +7,8 @@ data class UsuarioResponse(
     // Algunos backends pueden devolver "usuario" o "username"
     @SerializedName("usuario") val usuario: String? = null,
     @SerializedName("username") val username: String? = null,
+    @SerializedName("correo") val correo: String? = null,
+    @SerializedName("estado") val estado: String? = null,
     // Campos alternativos por si el nombre mostrable viene separado
     @SerializedName("nombres") val nombres: String? = null,
     @SerializedName("apellidos") val apellidos: String? = null,

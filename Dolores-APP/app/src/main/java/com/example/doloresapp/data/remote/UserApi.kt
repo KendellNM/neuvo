@@ -5,7 +5,7 @@ import retrofit2.http.GET
 
 interface UserApi {
     // Nota: BASE_URL ya incluye "/api/" (ver Constants.BASE_URL)
-    // Por lo tanto, este endpoint resultará en http://host/api/usuario/me
-    @GET("usuario/me")
+    // Por lo tanto, este endpoint resultará en http://host/api/usuarios/me
+    @GET("usuarios/me")
     suspend fun getCurrentUser(): UsuarioResponse
 }
