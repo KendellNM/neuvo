@@ -15,8 +15,12 @@ import java.util.concurrent.TimeUnit
 object NetworkClient {
 
     private var retrofit: Retrofit? = null
+    private var isInitialized = false
 
     fun init(context: Context) {
+        // Evitar reinicialización innecesaria
+        if (isInitialized && retrofit != null) return
+        
         TokenStore.init(context.applicationContext)
 
         val tokenRepo: AuthTokenRepository = AuthTokenRepositoryImpl()
@@ -39,6 +43,8 @@ object NetworkClient {
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+        
+        isInitialized = true
     }
 
     fun <T> createService(service: Class<T>): T {

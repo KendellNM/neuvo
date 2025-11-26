@@ -40,6 +40,10 @@ class GestionPedidosActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gestion_pedidos)
 
+        // Asegurar que NetworkClient esté inicializado
+        com.example.doloresapp.data.local.TokenStore.init(applicationContext)
+        NetworkClient.init(applicationContext)
+
         setupToolbar()
         setupViews()
         setupRecyclerView()

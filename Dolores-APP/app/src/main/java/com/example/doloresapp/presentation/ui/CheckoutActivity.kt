@@ -241,14 +241,37 @@ class CheckoutActivity : AppCompatActivity() {
             try {
                 val items = database.carritoDao().getAllItemsList()
 
+                // Intentar obtener clienteId de múltiples fuentes
                 if (clienteId == null) {
-                    val userApi = NetworkClient.createService(com.example.doloresapp.data.remote.UserApi::class.java)
-                    val currentUser = userApi.getCurrentUser()
-                    clienteId = currentUser.clienteId
+                    // Primero intentar desde SharedPreferences (guardado en registro)
+                    val prefs = getSharedPreferences(com.example.doloresapp.utils.ApiConstants.Prefs.NAME, MODE_PRIVATE)
+                    val savedClienteId = prefs.getLong("cliente_id", 0L)
+                    if (savedClienteId > 0) {
+                        clienteId = savedClienteId
+                    }
+                }
+                
+                if (clienteId == null) {
+                    // Intentar desde el endpoint /me
+                    try {
+                        val userApi = NetworkClient.createService(com.example.doloresapp.data.remote.UserApi::class.java)
+                        val currentUser = userApi.getCurrentUser()
+                        clienteId = currentUser.clienteId
+                        
+                        // Guardar para futuras consultas
+                        if (clienteId != null) {
+                            val prefs = getSharedPreferences(com.example.doloresapp.utils.ApiConstants.Prefs.NAME, MODE_PRIVATE)
+                            prefs.edit().putLong("cliente_id", clienteId!!).apply()
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("Checkout", "Error obteniendo usuario: ${e.message}")
+                    }
                 }
 
-                if (clienteId == null) {
-                    Toast.makeText(this@CheckoutActivity, "No se encontró información del cliente", Toast.LENGTH_SHORT).show()
+                if (clienteId == null || clienteId == 0L) {
+                    Toast.makeText(this@CheckoutActivity, 
+                        "No se encontró información del cliente. Por favor cierra sesión y vuelve a iniciar.", 
+                        Toast.LENGTH_LONG).show()
                     btnConfirmar.isEnabled = true
                     return@launch
                 }

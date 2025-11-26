@@ -195,11 +195,13 @@ class RegisterActivity : AppCompatActivity() {
                     val userRole = com.example.doloresapp.utils.RoleManager.parseRoleFromBackend(resp.roles ?: emptyList())
                     com.example.doloresapp.utils.RoleManager.saveUserRole(this@RegisterActivity, userRole)
                     
-                    // Guardar email
+                    // Guardar email y clienteId
                     val prefs = getSharedPreferences(com.example.doloresapp.utils.ApiConstants.Prefs.NAME, MODE_PRIVATE)
                     prefs.edit()
                         .putString(com.example.doloresapp.utils.ApiConstants.Prefs.USER_EMAIL, email)
                         .putBoolean(com.example.doloresapp.utils.ApiConstants.Prefs.IS_LOGGED_IN, true)
+                        .putLong("cliente_id", resp.clienteId ?: 0L)
+                        .putLong("usuario_id", resp.usuarioId ?: 0L)
                         .apply()
                     
                     Toast.makeText(this@RegisterActivity, "Registro exitoso", Toast.LENGTH_SHORT).show()

@@ -2,6 +2,8 @@ package com.example.doloresapp.presentation.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.Toast
@@ -14,7 +16,6 @@ import com.example.doloresapp.data.remote.NetworkClient
 import com.example.doloresapp.data.remote.service.ProductoApiService
 import com.example.doloresapp.presentation.adapter.ProductosAdapter
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.search.SearchBar
 import kotlinx.coroutines.launch
 
 class ProductosActivity : AppCompatActivity() {
@@ -33,6 +34,17 @@ class ProductosActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = "Productos"
+        
+        // Manejar click en icono de carrito del toolbar
+        toolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_carrito -> {
+                    startActivity(Intent(this, CarritoActivity::class.java))
+                    true
+                }
+                else -> false
+            }
+        }
         
         // Views
         recyclerView = findViewById(R.id.recyclerProductos)

@@ -29,8 +29,11 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Inicializa almacenamiento de token y navega si ya hay sesión
+        // Inicializa almacenamiento de token y NetworkClient SIEMPRE
         TokenStore.init(applicationContext)
+        NetworkClient.init(applicationContext)
+        
+        // Navega si ya hay sesión activa
         TokenStore.getToken()?.let { existing ->
             if (existing.isNotBlank()) {
                 // Redirigir a HomeActivity (maneja roles)
@@ -39,9 +42,6 @@ class LoginActivity : AppCompatActivity() {
                 return
             }
         }
-
-        // Inicializa red/almacenamiento de token
-        NetworkClient.init(applicationContext)
 
         // Habilita edge-to-edge para ocupar toda la pantalla
         enableEdgeToEdge()
@@ -139,9 +139,11 @@ class LoginActivity : AppCompatActivity() {
                         val currentUser = userApi.getCurrentUser()
                         prefs.edit()
                             .putLong(ApiConstants.Prefs.USER_ID, currentUser.id ?: 0L)
+                            .putLong("cliente_id", currentUser.clienteId ?: 0L)
+                            .putLong("repartidor_id", currentUser.repartidorId ?: 0L)
                             .apply()
                     } catch (e: Exception) {
-                        // Silenciar error, se obtendrá después
+                        android.util.Log.e("Login", "Error obteniendo datos de usuario: ${e.message}")
                     }
                     
                     Toast.makeText(this@LoginActivity, "Login exitoso como ${userRole.name}", Toast.LENGTH_SHORT).show()

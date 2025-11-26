@@ -105,27 +105,37 @@ class RepartidorActivity : AppCompatActivity() {
     }
     
     private fun initMap() {
-        mapView = findViewById(R.id.map_view)
-        mapView.setTileSource(TileSourceFactory.MAPNIK)
-        mapView.setMultiTouchControls(true)
-        mapView.controller.setZoom(15.0)
-        
-        // Agregar overlay de ubicación
-        myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), mapView)
-        myLocationOverlay?.enableMyLocation()
-        mapView.overlays.add(myLocationOverlay)
-        
-        // Marcar destino
-        destinoGeoPoint?.let { destino ->
-            destinoMarker = Marker(mapView).apply {
-                position = destino
-                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                title = "📍 Destino de Entrega"
-                icon = ContextCompat.getDrawable(this@RepartidorActivity, R.drawable.ic_destination_marker)
-                    ?: ContextCompat.getDrawable(this@RepartidorActivity, android.R.drawable.ic_menu_mylocation)
+        try {
+            mapView = findViewById(R.id.map_view)
+            mapView.setTileSource(TileSourceFactory.MAPNIK)
+            mapView.setMultiTouchControls(true)
+            mapView.controller.setZoom(15.0)
+            
+            // Agregar overlay de ubicación
+            try {
+                myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), mapView)
+                myLocationOverlay?.enableMyLocation()
+                mapView.overlays.add(myLocationOverlay)
+            } catch (e: Exception) {
+                // Si falla el overlay de ubicación, continuar sin él
+                e.printStackTrace()
             }
-            mapView.overlays.add(destinoMarker)
-            mapView.controller.setCenter(destino)
+            
+            // Marcar destino
+            destinoGeoPoint?.let { destino ->
+                destinoMarker = Marker(mapView).apply {
+                    position = destino
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                    title = "📍 Destino de Entrega"
+                    icon = ContextCompat.getDrawable(this@RepartidorActivity, R.drawable.ic_destination_marker)
+                        ?: ContextCompat.getDrawable(this@RepartidorActivity, android.R.drawable.ic_menu_mylocation)
+                }
+                mapView.overlays.add(destinoMarker)
+                mapView.controller.setCenter(destino)
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error inicializando mapa: ${e.message}", Toast.LENGTH_LONG).show()
+            e.printStackTrace()
         }
     }
     
@@ -154,19 +164,25 @@ class RepartidorActivity : AppCompatActivity() {
     }
     
     private fun initWebSocket() {
-        webSocketClient = DeliveryWebSocketClient(ApiConstants.BASE_URL)
-        webSocketClient.connect(
-            onConnected = {
-                runOnUiThread {
-                    Toast.makeText(this, "✅ WebSocket conectado", Toast.LENGTH_SHORT).show()
+        try {
+            webSocketClient = DeliveryWebSocketClient(ApiConstants.BASE_URL)
+            webSocketClient.connect(
+                onConnected = {
+                    runOnUiThread {
+                        Toast.makeText(this, "✅ WebSocket conectado", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onError = { error ->
+                    runOnUiThread {
+                        // No mostrar error si es solo problema de conexión
+                        // Toast.makeText(this, "❌ Error WebSocket: ${error.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            },
-            onError = { error ->
-                runOnUiThread {
-                    Toast.makeText(this, "❌ Error: ${error.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
-        )
+            )
+        } catch (e: Exception) {
+            // WebSocket es opcional, continuar sin él
+            e.printStackTrace()
+        }
     }
     
     private fun dibujarRuta(origen: GeoPoint, destino: GeoPoint) {

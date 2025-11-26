@@ -83,24 +83,29 @@ class DeliveryTrackingActivity : AppCompatActivity() {
     }
     
     private fun setupMap() {
-        mapView = findViewById(R.id.map_view)
-        mapView.setTileSource(TileSourceFactory.MAPNIK)
-        mapView.setMultiTouchControls(true)
-        
-        // Configurar zoom
-        mapView.controller.setZoom(15.0)
-        
-        // Marcar destino (dirección del cliente)
-        destinoGeoPoint?.let { destino ->
-            destinoMarker = Marker(mapView).apply {
-                position = destino
-                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                title = "📍 Destino de Entrega"
-                icon = ContextCompat.getDrawable(this@DeliveryTrackingActivity, R.drawable.ic_destination_marker)
-                    ?: getDefaultMarkerDrawable()
+        try {
+            mapView = findViewById(R.id.map_view)
+            mapView.setTileSource(TileSourceFactory.MAPNIK)
+            mapView.setMultiTouchControls(true)
+            
+            // Configurar zoom
+            mapView.controller.setZoom(15.0)
+            
+            // Marcar destino (dirección del cliente)
+            destinoGeoPoint?.let { destino ->
+                destinoMarker = Marker(mapView).apply {
+                    position = destino
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                    title = "📍 Destino de Entrega"
+                    icon = ContextCompat.getDrawable(this@DeliveryTrackingActivity, R.drawable.ic_destination_marker)
+                        ?: getDefaultMarkerDrawable()
+                }
+                mapView.overlays.add(destinoMarker)
+                mapView.controller.setCenter(destino)
             }
-            mapView.overlays.add(destinoMarker)
-            mapView.controller.setCenter(destino)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error inicializando mapa: ${e.message}", Toast.LENGTH_LONG).show()
+            e.printStackTrace()
         }
         
         // Cargar última ubicación guardada
@@ -138,19 +143,25 @@ class DeliveryTrackingActivity : AppCompatActivity() {
     }
     
     private fun connectWebSocket() {
-        webSocketClient.connect(
-            onConnected = {
-                runOnUiThread {
-                    Toast.makeText(this, "✅ Conectado al seguimiento", Toast.LENGTH_SHORT).show()
+        try {
+            webSocketClient.connect(
+                onConnected = {
+                    runOnUiThread {
+                        Toast.makeText(this, "✅ Conectado al seguimiento", Toast.LENGTH_SHORT).show()
+                    }
+                    subscribeToDelivery()
+                },
+                onError = { error ->
+                    runOnUiThread {
+                        // No mostrar error, el tracking puede funcionar sin WebSocket
+                        estadoTextView.text = "Estado: Sin conexión en tiempo real"
+                    }
                 }
-                subscribeToDelivery()
-            },
-            onError = { error ->
-                runOnUiThread {
-                    Toast.makeText(this, "❌ Error de conexión: ${error.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
-        )
+            )
+        } catch (e: Exception) {
+            // WebSocket es opcional
+            e.printStackTrace()
+        }
     }
     
     private fun subscribeToDelivery() {

@@ -41,14 +41,14 @@ class PedidosRepartidorAdapter(
             tvNumeroPedido.text = "Pedido #${pedido.numeroPedido ?: pedido.idPedidos}"
             tvEstado.text = pedido.estado ?: "PENDIENTE"
             
-            // Color del estado
+            // Color del estado (con null safety)
             val estadoColor = when (pedido.estado?.uppercase()) {
                 "ASIGNADO" -> Color.parseColor("#FF9800")
                 "EN_CAMINO" -> Color.parseColor("#2196F3")
                 "ENTREGADO" -> Color.parseColor("#4CAF50")
                 else -> Color.parseColor("#9E9E9E")
             }
-            tvEstado.background.setTint(estadoColor)
+            tvEstado.background?.setTint(estadoColor)
             
             // Cliente
             val clienteNombre = pedido.clientes?.let {
@@ -62,6 +62,9 @@ class PedidosRepartidorAdapter(
             
             // Total
             tvTotal.text = "💰 Total: S/ ${String.format("%.2f", pedido.total ?: 0.0)}"
+            
+            // Resetear visibilidad del botón (importante para reciclaje de ViewHolder)
+            btnIniciarEntrega.visibility = View.VISIBLE
             
             // Botones según estado
             when (pedido.estado?.uppercase()) {

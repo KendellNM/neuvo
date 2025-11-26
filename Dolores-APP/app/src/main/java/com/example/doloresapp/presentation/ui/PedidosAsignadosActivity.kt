@@ -37,6 +37,10 @@ class PedidosAsignadosActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pedidos_asignados)
 
+        // Asegurar que NetworkClient esté inicializado
+        com.example.doloresapp.data.local.TokenStore.init(applicationContext)
+        NetworkClient.init(applicationContext)
+
         setupToolbar()
         setupViews()
         setupRecyclerView()
@@ -108,21 +112,42 @@ class PedidosAsignadosActivity : AppCompatActivity() {
                 
                 // Obtener el ID del repartidor actual
                 val userApi = NetworkClient.createService(com.example.doloresapp.data.remote.UserApi::class.java)
-                val currentUser = userApi.getCurrentUser()
-                val repartidorId = currentUser.repartidorId
+                val currentUser = try {
+                    userApi.getCurrentUser()
+                } catch (e: Exception) {
+                    android.util.Log.e("PedidosAsignados", "Error obteniendo usuario: ${e.message}")
+                    null
+                }
+                
+                val repartidorId = currentUser?.repartidorId
+                android.util.Log.d("PedidosAsignados", "Usuario: ${currentUser?.usuario}, RepartidorId: $repartidorId")
                 
                 allPedidos = if (repartidorId != null) {
                     // Cargar solo los pedidos asignados a este repartidor
-                    api.getPedidosByRepartidor(repartidorId)
+                    try {
+                        api.getPedidosByRepartidor(repartidorId)
+                    } catch (e: Exception) {
+                        android.util.Log.e("PedidosAsignados", "Error cargando pedidos del repartidor: ${e.message}")
+                        emptyList()
+                    }
                 } else {
                     // Fallback: cargar todos los pedidos (para pruebas)
-                    api.getAllPedidos()
+                    android.util.Log.w("PedidosAsignados", "No se encontró repartidorId, cargando todos los pedidos")
+                    try {
+                        api.getAllPedidos()
+                    } catch (e: Exception) {
+                        android.util.Log.e("PedidosAsignados", "Error cargando todos los pedidos: ${e.message}")
+                        emptyList()
+                    }
                 }
                 
                 filterPedidos()
             } catch (e: Exception) {
+                android.util.Log.e("PedidosAsignados", "Error general: ${e.message}", e)
                 Toast.makeText(this@PedidosAsignadosActivity, 
                     "Error al cargar pedidos: ${e.message}", Toast.LENGTH_SHORT).show()
+                allPedidos = emptyList()
+                filterPedidos()
             } finally {
                 progressBar.visibility = View.GONE
                 swipeRefresh.isRefreshing = false

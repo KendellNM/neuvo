@@ -1,12 +1,16 @@
 package com.farm.dolores.farmacia.config;
 
 import com.farm.dolores.farmacia.entity.Categoria;
+import com.farm.dolores.farmacia.entity.Clientes;
 import com.farm.dolores.farmacia.entity.Productos;
+import com.farm.dolores.farmacia.entity.Repartidores;
 import com.farm.dolores.farmacia.entity.Roles;
 import com.farm.dolores.farmacia.entity.UsuarioRol;
 import com.farm.dolores.farmacia.entity.Usuarios;
 import com.farm.dolores.farmacia.repository.CategoriaRepository;
+import com.farm.dolores.farmacia.repository.ClientesRepository;
 import com.farm.dolores.farmacia.repository.ProductosRepository;
+import com.farm.dolores.farmacia.repository.RepartidoresRepository;
 import com.farm.dolores.farmacia.repository.RolesRepository;
 import com.farm.dolores.farmacia.repository.UsuarioRolRepository;
 import com.farm.dolores.farmacia.repository.UsuariosRepository;
@@ -32,6 +36,8 @@ public class DataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final CategoriaRepository categoriaRepository;
     private final ProductosRepository productosRepository;
+    private final RepartidoresRepository repartidoresRepository;
+    private final ClientesRepository clientesRepository;
 
     @Override
     @Transactional
@@ -76,11 +82,17 @@ public class DataInitializer implements CommandLineRunner {
 
         // Usuario Cliente
         log.info("Creando usuario CLIENTE...");
-        crearUsuarioSiNoExiste("cliente@dolores.com", "cliente123", "CLIENTE", "12345678");
+        Usuarios clienteUser = crearUsuarioSiNoExiste("cliente@dolores.com", "cliente123", "CLIENTE", "12345678");
+        if (clienteUser != null) {
+            crearClienteSiNoExiste(clienteUser, "Juan", "Pérez García", "12345678", "987654321");
+        }
         
         // Usuario Repartidor (DELIVERY)
         log.info("Creando usuario REPARTIDOR...");
-        crearUsuarioSiNoExiste("delivery@dolores.com", "delivery123", "REPARTIDOR", "87654321");
+        Usuarios deliveryUser = crearUsuarioSiNoExiste("delivery@dolores.com", "delivery123", "REPARTIDOR", "87654321");
+        if (deliveryUser != null) {
+            crearRepartidorSiNoExiste(deliveryUser, "Carlos", "López Mendoza", "87654321", "999888777", "Moto", "ABC-123");
+        }
         
         // Usuario Farmacéutico
         log.info("Creando usuario FARMACEUTICO...");
@@ -90,15 +102,69 @@ public class DataInitializer implements CommandLineRunner {
         log.info("  ✅ USUARIOS DE PRUEBA DISPONIBLES:");
         log.info("  📧 admin@dolores.com / admin123 (ADMIN)");
         log.info("  📧 cliente@dolores.com / cliente123 (CLIENTE)");
-        log.info("  📧 delivery@dolores.com / delivery123 (REPARTIDOR)");
+        log.info("  📧 delivery@dolores.com / delivery123 (REPARTIDOR) ← PUEDE RECIBIR PEDIDOS");
         log.info("  📧 farmaceutico@dolores.com / farmaceutico123 (FARMACEUTICO)");
         log.info("═══════════════════════════════════════════════════════════");
     }
+    
+    private void crearRepartidorSiNoExiste(Usuarios usuario, String nombres, String apellidos, 
+            String dni, String telefono, String vehiculo, String placa) {
+        try {
+            // Verificar si ya existe un repartidor para este usuario
+            Optional<Repartidores> existente = repartidoresRepository.findByUsuario(usuario);
+            if (existente.isPresent()) {
+                log.info("Repartidor ya existe para usuario {}", usuario.getCorreo());
+                return;
+            }
+            
+            Repartidores repartidor = new Repartidores();
+            repartidor.setNombres(nombres);
+            repartidor.setApellidos(apellidos);
+            repartidor.setDni(dni);
+            repartidor.setTelefono(telefono);
+            repartidor.setVehiculo(vehiculo);
+            repartidor.setPlacaVehiculo(placa);
+            repartidor.setEstado("ACTIVO");
+            repartidor.setFechaIngreso(new Date());
+            repartidor.setRepartidores(usuario); // Asociar con el usuario
+            
+            repartidoresRepository.save(repartidor);
+            log.info("✓ Repartidor creado: {} {} (Usuario: {})", nombres, apellidos, usuario.getCorreo());
+        } catch (Exception e) {
+            log.error("❌ Error creando repartidor: {}", e.getMessage());
+        }
+    }
+    
+    private void crearClienteSiNoExiste(Usuarios usuario, String nombres, String apellidos, 
+            String dni, String telefono) {
+        try {
+            // Verificar si ya existe un cliente para este usuario
+            Optional<Clientes> existente = clientesRepository.findByUsuario(usuario);
+            if (existente.isPresent()) {
+                log.info("Cliente ya existe para usuario {}", usuario.getCorreo());
+                return;
+            }
+            
+            Clientes cliente = new Clientes();
+            cliente.setNombres(nombres);
+            cliente.setApellidos(apellidos);
+            cliente.setDni(dni);
+            cliente.setTelefono(telefono);
+            cliente.setEstado("ACTIVO");
+            cliente.setClientes(usuario); // Asociar con el usuario
+            
+            clientesRepository.save(cliente);
+            log.info("✓ Cliente creado: {} {} (Usuario: {})", nombres, apellidos, usuario.getCorreo());
+        } catch (Exception e) {
+            log.error("❌ Error creando cliente: {}", e.getMessage());
+        }
+    }
 
-    private void crearUsuarioSiNoExiste(String correo, String password, String rolNombre, String dni) {
-        if (usuariosRepository.findByCorreo(correo).isPresent()) {
-            log.info("Usuario {} ya existe, omitiendo...", correo);
-            return;
+    private Usuarios crearUsuarioSiNoExiste(String correo, String password, String rolNombre, String dni) {
+        Optional<Usuarios> existente = usuariosRepository.findByCorreo(correo);
+        if (existente.isPresent()) {
+            log.info("Usuario {} ya existe, retornando existente...", correo);
+            return existente.get();
         }
 
         try {
@@ -108,7 +174,7 @@ public class DataInitializer implements CommandLineRunner {
 
             if (rol == null) {
                 log.error("❌ No se encontró el rol {} para crear usuario {}", rolNombre, correo);
-                return;
+                return null;
             }
 
             Usuarios user = new Usuarios();
@@ -128,9 +194,12 @@ public class DataInitializer implements CommandLineRunner {
             usuarioRol.setEstado("activo");
             usuarioRolRepository.save(usuarioRol);
             log.info("✓ Rol {} asignado a {}", rolNombre, correo);
+            
+            return savedUser;
 
         } catch (Exception e) {
             log.error("❌ Error creando usuario {}: {}", correo, e.getMessage(), e);
+            return null;
         }
     }
 

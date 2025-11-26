@@ -33,6 +33,10 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
+        // Asegurar que NetworkClient esté inicializado
+        TokenStore.init(applicationContext)
+        NetworkClient.init(applicationContext)
+        
         val userRole = RoleManager.getUserRole(this)
         
         // Cargar layout según rol
@@ -192,9 +196,9 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, GestionPedidosActivity::class.java))
         }
         
-        // Gestionar usuarios (TODO)
+        // Gestionar usuarios
         findViewById<Button>(R.id.btn_usuarios).setOnClickListener {
-            android.widget.Toast.makeText(this, "Próximamente: Gestión de usuarios", android.widget.Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, GestionUsuariosActivity::class.java))
         }
         
         // Recetas pendientes

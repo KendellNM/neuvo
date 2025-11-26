@@ -16,7 +16,14 @@ class DeliveryWebSocketClient(private val baseUrl: String) {
     private val gson = Gson()
     
     fun connect(onConnected: () -> Unit, onError: (Throwable) -> Unit) {
-        val url = "$baseUrl/ws-delivery"
+        // Construir URL de WebSocket correctamente
+        val wsUrl = baseUrl
+            .replace("http://", "ws://")
+            .replace("https://", "wss://")
+            .trimEnd('/')
+        val url = "$wsUrl/ws-delivery/websocket"
+        
+        Log.d("WebSocket", "Conectando a: $url")
         stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, url)
         
         val lifecycleDisposable = stompClient?.lifecycle()?.subscribe { lifecycleEvent ->

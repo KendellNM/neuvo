@@ -87,6 +87,9 @@
         <activity
             android:name=".presentation.ui.GestionPedidosActivity"
             android:exported="false" />
+        <activity
+            android:name=".presentation.ui.GestionUsuariosActivity"
+            android:exported="false" />
             
         <!-- OSMDroid no requiere API Key - 100% GRATIS -->
             
