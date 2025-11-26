@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">DoloresApp</string>
+    <string name="accede">Acccede</string>
+    <string name="title1">TUS DOLORES TIENE NOMBRE</string>
+    <string name="title2">Y TAMBIEN SOLUCION</string>
+    <string name="title3">Bienvenido A Tu Farmacia De Confianza</string>
+    <string name="title3.1">Dolores Tu Mejor Opción</string>
+    <string name="name">Ingresa Tus Nombres</string>
+    <string name="lastname">Ingresa Tus Apellidos</string>
+    <string name="gender">Seleccione Su Genero</string>
+    <string name="dni">Ingresa El Número De DNI</string>
+    <string name="phone">Ingresa El Número De Celular</string>
+    <string name="next">Avanza</string>
+    <string name="register">Registrate</string>
+    <string name="enter">Ingresa</string>
+    <string name="email_hint">Ingresa tu correo</string>
+    <string name="username_hint">Ingresa tu usuario</string>
+    <string name="password_hint">Ingresa tu contraseña</string>
+    <string name="login_message_text">¿Ya te registraste antes? </string>
+    <string name="login_link_text">Ingresa</string>
+    <string name="birthdate_hint">Ingresa tu fecha de nacimiento (AAAA-MM-DD)</string>
+    <string name="create_password_hint">Crea una contraseña segura</string>
+    <string name="confirm_password_hint">Confirma tu contraseña</string>
+    <string name="error_email_required">El correo es obligatorio</string>
+    <string name="error_email_invalid">El correo no es válido</string>
+    <string name="error_password_required">La contraseña es obligatoria</string>
+    <string name="error_password_length">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="error_password_mismatch">Las contraseñas no coinciden</string>
+    <string-array name="gender_options">
+        <item>Femenino</item>
+        <item>Masculino</item>
+    </string-array>
+
+</resources>

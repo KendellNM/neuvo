@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WebSocket - Farmacia Delivery</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .log {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #4CAF50;
+            padding-left: 10px;
+        }
+
+        .log-error {
+            border-left-color: #f44336;
+            color: #f44336;
+        }
+
+        .log-info {
+            border-left-color: #2196F3;
+            color: #2196F3;
+        }
+
+        .log-success {
+            border-left-color: #4CAF50;
+            color: #4CAF50;
+        }
+
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100px;
+        }
+
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚚 Test WebSocket - Delivery Tracking</h1>
+
+        <div id="status" class="status disconnected">
+            ❌ Desconectado
+        </div>
+
+        <div class="controls">
+            <h3>Conexión</h3>
+            <button id="connectBtn" onclick="connect()">Conectar</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>Desconectar</button>
+        </div>
+
+        <div class="controls">
+            <h3>Suscripción</h3>
+            <label>Pedido ID: <input type="number" id="pedidoId" value="123"></label>
+            <button id="subscribeBtn" onclick="subscribe()" disabled>Suscribirse</button>
+        </div>
+
+        <div class="controls">
+            <h3>Enviar Ubicación</h3>
+            <label>Latitud: <input type="text" id="lat" value="-12.0464"></label>
+            <label>Longitud: <input type="text" id="lng" value="-77.0428"></label>
+            <label>Repartidor: <input type="number" id="repartidorId" value="1"></label>
+            <button id="sendLocationBtn" onclick="sendLocation()" disabled>Enviar Ubicación</button>
+        </div>
+
+        <div class="controls">
+            <h3>Enviar Estado</h3>
+            <label>Estado:
+                <select id="estado">
+                    <option value="EN_PREPARACION">En Preparación</option>
+                    <option value="LISTO">Listo</option>
+                    <option value="EN_CAMINO" selected>En Camino</option>
+                    <option value="ENTREGADO">Entregado</option>
+                </select>
+            </label>
+            <button id="sendStatusBtn" onclick="sendStatus()" disabled>Enviar Estado</button>
+        </div>
+
+        <h3>📋 Log de Eventos</h3>
+        <div id="log" class="log">
+            <div class="log-entry log-info">Esperando conexión...</div>
+        </div>
+
+        <button onclick="clearLog()">Limpiar Log</button>
+    </div>
+
+    <script>
+        let stompClient = null;
+        let currentSubscription = null;
+
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function updateStatus(connected) {
+            const status = document.getElementById('status');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const subscribeBtn = document.getElementById('subscribeBtn');
+            const sendLocationBtn = document.getElementById('sendLocationBtn');
+            const sendStatusBtn = document.getElementById('sendStatusBtn');
+
+            if (connected) {
+                status.className = 'status connected';
+                status.textContent = '✅ Conectado';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                subscribeBtn.disabled = false;
+                sendLocationBtn.disabled = false;
+                sendStatusBtn.disabled = false;
+            } else {
+                status.className = 'status disconnected';
+                status.textContent = '❌ Desconectado';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                subscribeBtn.disabled = true;
+                sendLocationBtn.disabled = true;
+                sendStatusBtn.disabled = true;
+            }
+        }
+
+        function connect() {
+            addLog('🔌 Intentando conectar a ws://localhost:8090/ws-delivery', 'info');
+
+            const socket = new SockJS('http://localhost:8090/ws-delivery');
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function (frame) {
+                addLog('✅ Conectado exitosamente!', 'success');
+                addLog('Frame: ' + frame, 'info');
+                updateStatus(true);
+            }, function (error) {
+                addLog('❌ Error de conexión: ' + error, 'error');
+                updateStatus(false);
+            });
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect(function () {
+                    addLog('🔌 Desconectado', 'info');
+                    updateStatus(false);
+                });
+            }
+        }
+
+        function subscribe() {
+            const pedidoId = document.getElementById('pedidoId').value;
+
+            if (currentSubscription) {
+                currentSubscription.unsubscribe();
+                addLog('📡 Desuscrito del topic anterior', 'info');
+            }
+
+            const topic = '/topic/delivery/' + pedidoId;
+            addLog('📡 Suscribiéndose a: ' + topic, 'info');
+
+            currentSubscription = stompClient.subscribe(topic, function (message) {
+                addLog('📬 Mensaje recibido en ' + topic, 'success');
+                addLog('Contenido: ' + message.body, 'success');
+
+                try {
+                    const data = JSON.parse(message.body);
+                    addLog('📍 Ubicación - Lat: ' + data.latitud + ', Lng: ' + data.longitud, 'success');
+                } catch (e) {
+                    // No es JSON, mostrar como texto
+                }
+            });
+
+            addLog('✅ Suscrito exitosamente', 'success');
+        }
+
+        function sendLocation() {
+            const pedidoId = document.getElementById('pedidoId').value;
+            const lat = document.getElementById('lat').value;
+            const lng = document.getElementById('lng').value;
+            const repartidorId = document.getElementById('repartidorId').value;
+
+            const location = {
+                pedidoId: parseInt(pedidoId),
+                latitud: parseFloat(lat),
+                longitud: parseFloat(lng),
+                repartidorId: parseInt(repartidorId)
+            };
+
+            addLog('📨 Enviando ubicación a /app/delivery/location', 'info');
+            addLog('Datos: ' + JSON.stringify(location), 'info');
+
+            stompClient.send('/app/delivery/location', {}, JSON.stringify(location));
+
+            addLog('✅ Ubicación enviada', 'success');
+        }
+
+        function sendStatus() {
+            const pedidoId = document.getElementById('pedidoId').value;
+            const estado = document.getElementById('estado').value;
+
+            const statusUpdate = {
+                pedidoId: parseInt(pedidoId),
+                estado: estado,
+                mensaje: 'Estado actualizado desde test'
+            };
+
+            addLog('📨 Enviando estado a /app/delivery/status', 'info');
+            addLog('Datos: ' + JSON.stringify(statusUpdate), 'info');
+
+            stompClient.send('/app/delivery/status', {}, JSON.stringify(statusUpdate));
+
+            addLog('✅ Estado enviado', 'success');
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            addLog('Log limpiado', 'info');
+        }
+
+        // Auto-conectar al cargar (opcional)
+        // window.onload = connect;
+    </script>
+</body>
+
+</html>

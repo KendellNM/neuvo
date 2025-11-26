@@ -1,0 +1,94 @@
+-- ============================================
+-- DATOS GENÉRICOS MÍNIMOS - FARMACIA BACKEND
+-- ============================================
+-- Este archivo se ejecuta automáticamente al iniciar Spring Boot
+-- Solo datos esenciales con nombres genéricos
+
+-- ============================================
+-- 1. ROLES
+-- ============================================
+INSERT IGNORE INTO Roles (id_roles, nombre, descripcion, estado) VALUES
+(1, 'ROLE_ADMIN', 'Administrador del sistema', 'ACTIVO'),
+(2, 'ROLE_CLIENTE', 'Cliente de la farmacia', 'ACTIVO'),
+(3, 'ROLE_FARMACEUTICO', 'Farmacéutico', 'ACTIVO'),
+(4, 'ROLE_MEDICO', 'Médico', 'ACTIVO'),
+(5, 'ROLE_REPARTIDOR', 'Repartidor', 'ACTIVO');
+
+-- ============================================
+-- 2. USUARIOS GENÉRICOS
+-- ============================================
+-- Contraseña para todos: "password123" (encriptada con BCrypt)
+INSERT IGNORE INTO Usuarios (id_usuarios, correo, contrasena, estado, fecha_creacion, usuario) VALUES
+(1, 'admin@test.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'ACTIVO', NOW(), 'admin'),
+(2, 'user001@test.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'ACTIVO', NOW(), 'user001');
+
+-- ============================================
+-- 3. USUARIO_ROL
+-- ============================================
+INSERT IGNORE INTO Usuario_Rol (id_usuario_rol, usuarios_id, rol_id, estado) VALUES
+(1, 1, 1, 'ACTIVO'), -- Admin
+(2, 2, 2, 'ACTIVO'); -- Cliente
+
+-- ============================================
+-- 4. CLIENTES GENÉRICOS
+-- ============================================
+INSERT IGNORE INTO Clientes (idClientes, nombres, apellidos, dni, telefono, fecha_nacimiento, genero, estado, foto_perfil, usuario_id) VALUES
+(1, 'Usuario', 'Test', '12345678', '999000001', '1990-01-01', 'M', 'ACTIVO', NULL, 2);
+
+-- ============================================
+-- 5. CATEGORÍAS BÁSICAS
+-- ============================================
+INSERT IGNORE INTO Categoria (id_categoria, nombre, descripcion, estado) VALUES
+(1, 'Medicamentos', 'Productos farmacéuticos', 'ACTIVO'),
+(2, 'Vitaminas', 'Suplementos vitamínicos', 'ACTIVO'),
+(3, 'Cuidado Personal', 'Productos de cuidado', 'ACTIVO');
+
+-- ============================================
+-- 6. LABORATORIOS GENÉRICOS
+-- ============================================
+INSERT IGNORE INTO Laboratorios (id_laboratorios, nombre, pais, telefono, email, estado) VALUES
+(1, 'Lab A', 'País A', '+1111111', 'contacto@laba.com', 'ACTIVO'),
+(2, 'Lab B', 'País B', '+2222222', 'info@labb.com', 'ACTIVO');
+
+-- ============================================
+-- 7. PRODUCTOS BÁSICOS
+-- ============================================
+INSERT IGNORE INTO Productos (id_productos, nombre, descripcion, precio, stock, fecha_vencimiento, requiere_receta, codigo_barras, estado, categoria_id, laboratorio_id) VALUES
+(1, 'Producto A', 'Descripción del producto A', 10.00, 50, '2026-12-31', 0, '1234567890001', 'ACTIVO', 1, 1),
+(2, 'Producto B', 'Descripción del producto B', 15.50, 30, '2026-12-31', 0, '1234567890002', 'ACTIVO', 2, 2),
+(3, 'Producto C', 'Descripción del producto C', 8.75, 100, '2026-12-31', 1, '1234567890003', 'ACTIVO', 1, 1);
+
+-- ============================================
+-- 8. DIRECCIONES GENÉRICAS
+-- ============================================
+INSERT IGNORE INTO Direcciones (id_direcciones, direccion, distrito, provincia, departamento, referencia, es_principal, cliente_id) VALUES
+(1, 'Dirección Test 123', 'Distrito Test', 'Provincia Test', 'Departamento Test', 'Referencia test', 1, 1);
+
+-- ============================================
+-- 9. PEDIDO DE PRUEBA PARA WEBSOCKET
+-- ============================================
+INSERT IGNORE INTO Pedidos (id_pedidos, fecha_pedido, estado, total, metodo_pago, direccion_entrega, cliente_id, usuario_id) VALUES
+(123, NOW(), 'EN_CAMINO', 25.50, 'EFECTIVO', 'Dirección Test 123', 1, 2);
+
+-- ============================================
+-- 10. DETALLE DEL PEDIDO
+-- ============================================
+INSERT IGNORE INTO Pedido_Detalle (id_pedido_detalle, cantidad, precio_unitario, subtotal, pedido_id, producto_id) VALUES
+(1, 1, 10.00, 10.00, 123, 1),
+(2, 1, 15.50, 15.50, 123, 2);
+
+-- ============================================
+-- 11. PROGRAMA DE FIDELIZACIÓN BÁSICO
+-- ============================================
+INSERT IGNORE INTO ProgramaFidelizacion (idProgramaFidelizacion, cliente_id, puntosActuales, puntosAcumulados, nivelMembresia, fechaRegistro) VALUES
+(1, 1, 100, 100, 'BRONCE', NOW());
+
+-- ============================================
+-- MENSAJE DE CONFIRMACIÓN
+-- ============================================
+SELECT '✅ Datos genéricos cargados correctamente' AS Status;
+SELECT '👤 Admin: admin@test.com / password123' AS Admin;
+SELECT '👤 Cliente: user001@test.com / password123 (DNI: 12345678)' AS Cliente;
+SELECT '📦 3 productos básicos creados' AS Productos;
+SELECT '🔌 Pedido #123 listo para WebSocket' AS WebSocket;
+SELECT '🎯 Sistema de fidelización activo' AS Fidelizacion;

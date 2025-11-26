@@ -1,0 +1,11 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <!-- Degradado metálico tipo tapa -->
+    <gradient
+        android:startColor="@color/dashboard"
+        android:centerColor="@color/hojas"
+        android:endColor="@color/white"
+        android:angle="0" />
+    <size android:height="44dp"/>
+    <padding android:bottom="4dp" />
+</shape>

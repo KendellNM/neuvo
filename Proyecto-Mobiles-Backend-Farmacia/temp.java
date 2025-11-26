@@ -1,0 +1,699 @@
+package com.farm.dolores.farmacia.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+import com.farm.dolores.farmacia.entity.*;
+import com.farm.dolores.farmacia.repository.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+@Component
+@Order(1) // Ejecutar primero
+public class DataSeeder implements CommandLineRunner {
+
+    @Autowired private RolesRepository rolesRepository;
+    @Autowired private UsuariosRepository usuariosRepository;
+    @Autowired private UsuarioRolRepository usuarioRolRepository;
+    @Autowired private ClientesRepository clientesRepository;
+    @Autowired private CategoriaRepository categoriaRepository;
+    @Autowired private LaboratoriosRepository laboratoriosRepository;
+    @Autowired private ProductosRepository productosRepository;
+    @Autowired private DireccionesRepository direccionesRepository;
+    @Autowired private PedidosRepository pedidosRepository;
+    @Autowired private PedidoDetalleRepository pedidoDetalleRepository;
+    @Autowired private ProgramaFidelizacionRepository programaFidelizacionRepository;
+    @Autowired private MedicosRepository medicosRepository;
+    @Autowired private FarmaceuticosRepository farmaceuticosRepository;
+    @Autowired private RepartidoresRepository repartidoresRepository;
+    @Autowired private RecetaDigitalRepository recetaDigitalRepository;
+    @Autowired private RecetaDigitalDetalleRepository recetaDigitalDetalleRepository;
+    @Autowired private MovimientoPuntosRepository movimientoPuntosRepository;
+    @Autowired private CuponRepository cuponRepository;
+    @Autowired private NotificacionPushRepository notificacionPushRepository;
+    @Autowired private DispositivoClienteRepository dispositivoClienteRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
+
+    private Random random = new Random();
+    private List<Usuarios> usuarios = new ArrayList<>();
+    private List<Clientes> clientes = new ArrayList<>();
+    private List<Categoria> categorias = new ArrayList<>();
+    private List<Laboratorios> laboratorios = new ArrayList<>();
+    private List<Productos> productos = new ArrayList<>();
+    private List<Medicos> medicos = new ArrayList<>();
+    private List<Farmaceuticos> farmaceuticos = new ArrayList<>();
+    private List<Repartidores> repartidores = new ArrayList<>();
+    private List<Pedidos> pedidos = new ArrayList<>();
+    private List<ProgramaFidelizacion> programasFidelizacion = new ArrayList<>();
+
+    @Override
+    public void run(String... args) throws Exception {
+        if (rolesRepository.count() == 0) {
+            seedData();
+            printSummary();
+        }
+    }
+
+    private void seedData() {
+        System.out.println("🔄 Iniciando carga de datos completos...");
+        
+        // 1. ROLES (5 roles)
+        Roles adminRole = createRole(1L, "ROLE_ADMIN", "Administrador del sistema");
+        Roles clienteRole = createRole(2L, "ROLE_CLIENTE", "Cliente de la farmacia");
+        Roles farmaceuticoRole = createRole(3L, "ROLE_FARMACEUTICO", "Farmacéutico");
+        Roles medicoRole = createRole(4L, "ROLE_MEDICO", "Médico");
+        Roles repartidorRole = createRole(5L, "ROLE_REPARTIDOR", "Repartidor");
+
+        // 2. USUARIOS (25 usuarios)
+        createUsuarios(adminRole, clienteRole, farmaceuticoRole, medicoRole, repartidorRole);
+
+        // 3. CATEGORÍAS (10 categorías)
+        createCategorias();
+
+        // 4. LABORATORIOS (15 laboratorios)
+        createLaboratorios();
+
+        // 5. CLIENTES (20 clientes)
+        createClientes();
+
+        // 6. MÉDICOS (8 médicos)
+        createMedicos();
+
+        // 7. FARMACÉUTICOS (6 farmacéuticos)
+        createFarmaceuticos();
+
+        // 8. REPARTIDORES (10 repartidores)
+        createRepartidores();
+
+        // 9. PRODUCTOS (50 productos)
+        createProductos();
+
+        // 10. DIRECCIONES (30 direcciones)
+        createDirecciones();
+
+        // 11. PEDIDOS (25 pedidos)
+        createPedidos();
+
+        // 12. PROGRAMA DE FIDELIZACIÓN (20 programas)
+        createProgramasFidelizacion();
+
+        // 13. MOVIMIENTOS DE PUNTOS (40 movimientos)
+        createMovimientosPuntos();
+
+        // 14. CUPONES (15 cupones)
+        createCupones();
+
+        // 15. RECETAS DIGITALES (12 recetas)
+        createRecetasDigitales();
+
+        // 16. DISPOSITIVOS CLIENTES (25 dispositivos)
+        createDispositivosClientes();
+
+        // 17. NOTIFICACIONES PUSH (30 notificaciones)
+        createNotificacionesPush();
+    }
+
+    private Roles createRole(Long id, String nombre, String descripcion) {
+        Roles role = new Roles();
+        role.setIdRoles(id);
+        role.setNombre(nombre);
+        role.setDescripcion(descripcion);
+        role.setEstado("ACTIVO");
+        return rolesRepository.save(role);
+    }
+
+    private Usuarios createUser(Long id, String correo, String usuario) {
+        Usuarios user = new Usuarios();
+        user.setIdUsuarios(id);
+        user.setCorreo(correo);
+        user.setContrasena(passwordEncoder.encode("password123"));
+        user.setUsuario(usuario);
+        user.setEstado("ACTIVO");
+        user.setFechaCreacion(LocalDateTime.now());
+        return usuariosRepository.save(user);
+    }
+
+    private UsuarioRol createUsuarioRol(Long id, Usuarios usuario, Roles rol) {
+        UsuarioRol usuarioRol = new UsuarioRol();
+        usuarioRol.setIdUsuarioRol(id);
+        usuarioRol.setUsuarios(usuario);
+        usuarioRol.setRol(rol);
+        usuarioRol.setEstado("ACTIVO");
+        return usuarioRolRepository.save(usuarioRol);
+    }
+
+    private Clientes createCliente(Long id, String nombres, String apellidos, String dni, 
+                                 String telefono, Usuarios usuario) {
+        Clientes cliente = new Clientes();
+        cliente.setIdClientes(id);
+        cliente.setNombres(nombres);
+        cliente.setApellidos(apellidos);
+        cliente.setDni(dni);
+        cliente.setTelefono(telefono);
+        cliente.setFechaNacimiento(LocalDate.of(1990, 1, 1));
+        cliente.setGenero("M");
+        cliente.setEstado("ACTIVO");
+        cliente.setFechaRegistro(LocalDateTime.now());
+        cliente.setUsuarios(usuario);
+        return clientesRepository.save(cliente);
+    }
+
+    private Categoria createCategoria(Long id, String nombre, String descripcion) {
+        Categoria categoria = new Categoria();
+        categoria.setIdCategoria(id);
+        categoria.setNombre(nombre);
+        categoria.setDescripcion(descripcion);
+        categoria.setEstado("ACTIVO");
+        return categoriaRepository.save(categoria);
+    }
+
+    private Laboratorios createLaboratorio(Long id, String nombre, String pais, 
+                                         String telefono, String email) {
+        Laboratorios lab = new Laboratorios();
+        lab.setIdLaboratorios(id);
+        lab.setNombre(nombre);
+        lab.setPais(pais);
+        lab.setTelefono(telefono);
+        lab.setEmail(email);
+        lab.setEstado("ACTIVO");
+        return laboratoriosRepository.save(lab);
+    }
+
+    private Productos createProducto(Long id, String nombre, String descripcion, 
+                                   BigDecimal precio, Integer stock, String codigoBarras,
+                                   Categoria categoria, Laboratorios laboratorio) {
+        Productos producto = new Productos();
+        producto.setIdProductos(id);
+        producto.setNombre(nombre);
+        producto.setDescripcion(descripcion);
+        producto.setPrecio(precio);
+        producto.setStock(stock);
+        producto.setFechaVencimiento(LocalDate.of(2026, 12, 31));
+        producto.setRequiereReceta(id == 3L); // Solo producto C requiere receta
+        producto.setCodigoBarras(codigoBarras);
+        producto.setEstado("ACTIVO");
+        producto.setCategoria(categoria);
+        producto.setLaboratorios(laboratorio);
+        return productosRepository.save(producto);
+    }
+
+    private Direcciones createDireccion(Long id, String direccion, String distrito, 
+                                      String provincia, String departamento, 
+                                      String referencia, Clientes cliente) {
+        Direcciones dir = new Direcciones();
+        dir.setIdDirecciones(id);
+        dir.setDireccion(direccion);
+        dir.setDistrito(distrito);
+        dir.setProvincia(provincia);
+        dir.setDepartamento(departamento);
+        dir.setReferencia(referencia);
+        dir.setEsPrincipal(true);
+        dir.setClientes(cliente);
+        return direccionesRepository.save(dir);
+    }
+
+    private Pedidos createPedido(Long id, String estado, BigDecimal total, 
+                               String metodoPago, String direccionEntrega,
+                               Clientes cliente, Usuarios usuario) {
+        Pedidos pedido = new Pedidos();
+        pedido.setIdPedidos(id);
+        pedido.setFechaPedido(LocalDateTime.now());
+        pedido.setEstado(estado);
+        pedido.setTotal(total);
+        pedido.setMetodoPago(metodoPago);
+        pedido.setDireccionEntrega(direccionEntrega);
+        pedido.setClientes(cliente);
+        pedido.setUsuarios(usuario);
+        return pedidosRepository.save(pedido);
+    }
+
+    private PedidoDetalle createPedidoDetalle(Long id, Integer cantidad, 
+                                            BigDecimal precioUnitario, BigDecimal subtotal,
+                                            Pedidos pedido, Productos producto) {
+        PedidoDetalle detalle = new PedidoDetalle();
+        detalle.setIdPedidoDetalle(id);
+        detalle.setCantidad(cantidad);
+        detalle.setPrecioUnitario(precioUnitario);
+        detalle.setSubtotal(subtotal);
+        detalle.setPedidos(pedido);
+        detalle.setProductos(producto);
+        return pedidoDetalleRepository.save(detalle);
+    }
+
+    private ProgramaFidelizacion createProgramaFidelizacion(Long id, Clientes cliente, 
+                                                          Integer puntosActuales, 
+                                                          Integer puntosAcumulados, 
+                                                          String nivelMembresia) {
+        ProgramaFidelizacion programa = new ProgramaFidelizacion();
+        programa.setIdProgramaFidelizacion(id);
+        programa.setClientes(cliente);
+        programa.setPuntosActuales(puntosActuales);
+        programa.setPuntosAcumulados(puntosAcumulados);
+        programa.setNivelMembresia(nivelMembresia);
+        programa.setFechaRegistro(LocalDateTime.now());
+        programa.setFechaUltimaActualizacion(LocalDateTime.now());
+        return programaFidelizacionRepository.save(programa);
+    }
+
+    private void createUsuarios(Roles adminRole, Roles clienteRole, Roles farmaceuticoRole,
+                               Roles medicoRole, Roles repartidorRole) {
+        // Admin
+        Usuarios admin = createUser(1L, "admin@test.com", "admin");
+        usuarios.add(admin);
+        createUsuarioRol(1L, admin, adminRole);
+
+        // Clientes (20)
+        for (int i = 1; i <= 20; i++) {
+            Usuarios user = createUser((long)(i + 1), "cliente" + String.format("%03d", i) + "@test.com", "cliente" + String.format("%03d", i));
+            usuarios.add(user);
+            createUsuarioRol((long)(i + 1), user, clienteRole);
+        }
+
+        // Farmacéuticos (6)
+        for (int i = 1; i <= 6; i++) {
+            Usuarios user = createUser((long)(i + 21), "farmaceutico" + String.format("%03d", i) + "@test.com", "farmaceutico" + String.format("%03d", i));
+            usuarios.add(user);
+            createUsuarioRol((long)(i + 21), user, farmaceuticoRole);
+        }
+
+        // Médicos (8)
+        for (int i = 1; i <= 8; i++) {
+            Usuarios user = createUser((long)(i + 27), "medico" + String.format("%03d", i) + "@test.com", "medico" + String.format("%03d", i));
+            usuarios.add(user);
+            createUsuarioRol((long)(i + 27), user, medicoRole);
+        }
+
+        // Repartidores (10)
+        for (int i = 1; i <= 10; i++) {
+            Usuarios user = createUser((long)(i + 35), "repartidor" + String.format("%03d", i) + "@test.com", "repartidor" + String.format("%03d", i));
+            usuarios.add(user);
+            createUsuarioRol((long)(i + 35), user, repartidorRole);
+        }
+    }
+
+    private void createCategorias() {
+        String[] nombres = {
+            "Analgésicos", "Antibióticos", "Vitaminas", "Antiinflamatorios", "Dermatológicos",
+            "Digestivos", "Respiratorios", "Cardiovasculares", "Neurológicos", "Oftalmológicos"
+        };
+        String[] descripciones = {
+            "Medicamentos para el dolor", "Medicamentos antibacterianos", "Suplementos vitamínicos",
+            "Medicamentos antiinflamatorios", "Productos para la piel", "Medicamentos digestivos",
+            "Medicamentos respiratorios", "Medicamentos cardiovasculares", "Medicamentos neurológicos",
+            "Productos oftalmológicos"
+        };
+
+        for (int i = 0; i < nombres.length; i++) {
+            Categoria cat = createCategoria((long)(i + 1), nombres[i], descripciones[i]);
+            categorias.add(cat);
+        }
+    }
+
+    private void createLaboratorios() {
+        String[] nombres = {
+            "Bayer", "Pfizer", "Roche", "Novartis", "Sanofi", "Johnson & Johnson", "Abbott", "Merck",
+            "GSK", "AstraZeneca", "Boehringer", "Takeda", "Eli Lilly", "Bristol Myers", "Amgen"
+        };
+        String[] paises = {
+            "Alemania", "Estados Unidos", "Suiza", "Suiza", "Francia", "Estados Unidos", "Estados Unidos", "Estados Unidos",
+            "Reino Unido", "Reino Unido", "Alemania", "Japón", "Estados Unidos", "Estados Unidos", "Estados Unidos"
+        };
+
+        for (int i = 0; i < nombres.length; i++) {
+            Laboratorios lab = createLaboratorio((long)(i + 1), nombres[i], paises[i], 
+                                               "+1" + String.format("%07d", random.nextInt(9999999)), 
+                                               "contacto@" + nombres[i].toLowerCase().replace(" ", "") + ".com");
+            laboratorios.add(lab);
+        }
+    }
+
+    private void createClientes() {
+        String[] nombres = {
+            "Cliente", "Usuario", "Persona", "Paciente", "Comprador", "Visitante", "Miembro", "Suscriptor",
+            "Beneficiario", "Titular", "Portador", "Afiliado", "Registrado", "Activo", "Regular",
+            "Frecuente", "Nuevo", "Antiguo", "Preferido", "Premium"
+        };
+
+        for (int i = 0; i < 20; i++) {
+            String dni = String.format("%08d", 10000000 + i);
+            String telefono = "9" + String.format("%08d", random.nextInt(99999999));
+            String genero = (i % 2 == 0) ? "M" : "F";
+            
+            Usuarios usuario = usuarios.get(i + 1); // +1 porque el admin es el índice 0
+            
+            Clientes cliente = createCliente((long)(i + 1), nombres[i], String.format("Test%03d", i + 1), 
+                                           dni, telefono, usuario);
+            clientes.add(cliente);
+        }
+    }
+
+    private void createMedicos() {
+        String[] especialidades = {
+            "Medicina General", "Pediatría", "Cardiología", "Dermatología", "Neurología", 
+            "Gastroenterología", "Oftalmología", "Traumatología"
+        };
+
+        for (int i = 0; i < 8; i++) {
+            String cmp = "CMP" + String.format("%05d", 10000 + i);
+            String telefono = "9" + String.format("%08d", random.nextInt(99999999));
+            
+            Usuarios usuario = usuarios.get(i + 28); // Médicos empiezan en índice 28
+            
+            Medicos medico = createMedico((long)(i + 1), "Dr. Médico", String.format("Test%03d", i + 1),
+                                        especialidades[i], cmp, telefono, usuario);
+            medicos.add(medico);
+        }
+    }
+
+    private void createFarmaceuticos() {
+        String[] turnos = {"MAÑANA", "TARDE", "NOCHE", "MAÑANA", "TARDE", "NOCHE"};
+
+        for (int i = 0; i < 6; i++) {
+            String cqf = "CQF" + String.format("%05d", 20000 + i);
+            String telefono = "9" + String.format("%08d", random.nextInt(99999999));
+            
+            Usuarios usuario = usuarios.get(i + 22); // Farmacéuticos empiezan en índice 22
+            
+            Farmaceuticos farmaceutico = createFarmaceutico((long)(i + 1), "Farmacéutico", String.format("Test%03d", i + 1),
+                                                           cqf, telefono, turnos[i], usuario);
+            farmaceuticos.add(farmaceutico);
+        }
+    }
+
+    private void createRepartidores() {
+        String[] tiposVehiculo = {"MOTO", "BICICLETA", "AUTO", "MOTO", "BICICLETA", "MOTO", "AUTO", "MOTO", "BICICLETA", "MOTO"};
+
+        for (int i = 0; i < 10; i++) {
+            String dni = String.format("%08d", 20000000 + i);
+            String telefono = "9" + String.format("%08d", random.nextInt(99999999));
+            String placa = String.format("ABC-%03d", 100 + i);
+            
+            Usuarios usuario = usuarios.get(i + 36); // Repartidores empiezan en índice 36
+            
+            Repartidores repartidor = createRepartidor((long)(i + 1), "Repartidor", String.format("Test%03d", i + 1),
+                                                      dni, telefono, placa, tiposVehiculo[i], usuario);
+            repartidores.add(repartidor);
+        }
+    }
+
+    private void createProductos() {
+        String[] medicamentos = {
+            "Aspirina 500mg", "Paracetamol 500mg", "Ibuprofeno 400mg", "Amoxicilina 500mg", "Diclofenaco 50mg",
+            "Omeprazol 20mg", "Loratadina 10mg", "Cetirizina 10mg", "Vitamina C 1000mg", "Vitamina D3 1000UI",
+            "Complejo B", "Calcio + Magnesio", "Omega 3", "Probióticos", "Multivitamínico",
+            "Crema Hidratante", "Protector Solar SPF50", "Shampoo Anticaspa", "Pasta Dental", "Enjuague Bucal",
+            "Alcohol en Gel", "Mascarillas N95", "Termómetro Digital", "Tensiómetro", "Glucómetro",
+            "Azitromicina 500mg", "Ciprofloxacino 500mg", "Metformina 850mg", "Atorvastatina 20mg", "Losartán 50mg",
+            "Amlodipino 5mg", "Enalapril 10mg", "Furosemida 40mg", "Digoxina 0.25mg", "Warfarina 5mg",
+            "Insulina Glargina", "Insulina Regular", "Salbutamol Inhalador", "Beclometasona Spray", "Montelukast 10mg",
+            "Prednisona 20mg", "Dexametasona 4mg", "Hidrocortisona Crema", "Betametasona Crema", "Clotrimazol Crema",
+            "Ketoconazol Shampoo", "Minoxidil 5%", "Finasteride 1mg", "Sildenafil 50mg", "Tadalafil 20mg"
+        };
+
+        for (int i = 0; i < 50; i++) {
+            BigDecimal precio = new BigDecimal(5 + random.nextDouble() * 95); // Entre 5 y 100
+            precio = precio.setScale(2, BigDecimal.ROUND_HALF_UP);
+            
+            int stock = 10 + random.nextInt(191); // Entre 10 y 200
+            String codigoBarras = "75012345" + String.format("%05d", 67890 + i);
+            boolean requiereReceta = i >= 25; // Los últimos 25 requieren receta
+            
+            Categoria categoria = categorias.get(random.nextInt(categorias.size()));
+            Laboratorios laboratorio = laboratorios.get(random.nextInt(laboratorios.size()));
+            
+            Productos producto = createProducto((long)(i + 1), medicamentos[i], 
+                                              "Descripción detallada de " + medicamentos[i],
+                                              precio, stock, codigoBarras, requiereReceta, categoria, laboratorio);
+            productos.add(producto);
+        }
+    }
+
+    private void createDirecciones() {
+        String[] distritos = {
+            "Miraflores", "San Isidro", "Surco", "La Molina", "San Borja", "Barranco", "Chorrillos", "Magdalena",
+            "Pueblo Libre", "Jesús María", "Lince", "Breña", "Lima", "Rímac", "Los Olivos"
+        };
+        String[] calles = {
+            "Av. Principal", "Jr. Central", "Calle Real", "Av. Universitaria", "Jr. Comercio", "Calle Lima",
+            "Av. Grau", "Jr. Unión", "Calle Bolívar", "Av. Arequipa", "Jr. Cusco", "Calle Piura",
+            "Av. Brasil", "Jr. Tacna", "Calle Junín"
+        };
+
+        for (int i = 0; i < 30; i++) {
+            String direccion = calles[random.nextInt(calles.length)] + " " + (100 + random.nextInt(900));
+            String distrito = distritos[random.nextInt(distritos.length)];
+            String referencia = "Referencia " + (i + 1);
+            
+            Clientes cliente = clientes.get(i % clientes.size());
+            boolean esPrincipal = (i < 20); // Una dirección principal por cliente
+            
+            createDireccion((long)(i + 1), direccion, distrito, "Lima", "Lima", referencia, esPrincipal, cliente);
+        }
+    }
+
+    private void createPedidos() {
+        String[] estados = {"PENDIENTE", "EN_PREPARACION", "LISTO", "EN_CAMINO", "ENTREGADO", "CANCELADO"};
+        String[] metodosPago = {"EFECTIVO", "TARJETA", "TRANSFERENCIA", "YAPE", "PLIN"};
+
+        for (int i = 0; i < 25; i++) {
+            String estado = estados[random.nextInt(estados.length)];
+            String metodoPago = metodosPago[random.nextInt(metodosPago.length)];
+            BigDecimal total = new BigDecimal(20 + random.nextDouble() * 180); // Entre 20 y 200
+            total = total.setScale(2, BigDecimal.ROUND_HALF_UP);
+            
+            Clientes cliente = clientes.get(random.nextInt(clientes.size()));
+            Usuarios usuario = cliente.getUsuarios();
+            
+            Long pedidoId = (i == 0) ? 123L : (long)(i + 1); // El primer pedido es el 123 para WebSocket
+            if (i == 0) estado = "EN_CAMINO"; // Asegurar que el pedido 123 esté en camino
+            
+            Pedidos pedido = createPedido(pedidoId, estado, total, metodoPago, 
+                                        "Dirección de entrega " + (i + 1), cliente, usuario);
+            pedidos.add(pedido);
+            
+            // Crear detalles del pedido (1-4 productos por pedido)
+            int numProductos = 1 + random.nextInt(4);
+            BigDecimal totalCalculado = BigDecimal.ZERO;
+            
+            for (int j = 0; j < numProductos; j++) {
+                Productos producto = productos.get(random.nextInt(productos.size()));
+                int cantidad = 1 + random.nextInt(3);
+                BigDecimal precioUnitario = producto.getPrecio();
+                BigDecimal subtotal = precioUnitario.multiply(new BigDecimal(cantidad));
+                totalCalculado = totalCalculado.add(subtotal);
+                
+                createPedidoDetalle((long)(i * 10 + j + 1), cantidad, precioUnitario, subtotal, pedido, producto);
+            }
+            
+            // Actualizar el total real del pedido
+            pedido.setTotal(totalCalculado);
+            pedidosRepository.save(pedido);
+        }
+    }
+
+    private void createProgramasFidelizacion() {
+        String[] niveles = {"BRONCE", "PLATA", "ORO", "PLATINO"};
+        
+        for (int i = 0; i < 20; i++) {
+            Clientes cliente = clientes.get(i);
+            
+            int puntosAcumulados = random.nextInt(15000);
+            int puntosActuales = Math.max(0, puntosAcumulados - random.nextInt(5000));
+            
+            String nivel;
+            if (puntosAcumulados < 2000) nivel = "BRONCE";
+            else if (puntosAcumulados < 5000) nivel = "PLATA";
+            else if (puntosAcumulados < 10000) nivel = "ORO";
+            else nivel = "PLATINO";
+            
+            ProgramaFidelizacion programa = createProgramaFidelizacion((long)(i + 1), cliente, 
+                                                                     puntosActuales, puntosAcumulados, nivel);
+            programasFidelizacion.add(programa);
+        }
+    }
+
+    private void createMovimientosPuntos() {
+        String[] tipos = {"ACUMULACION", "CANJE", "EXPIRACION", "BONIFICACION"};
+        String[] descripciones = {
+            "Compra de productos", "Canje por cupón", "Puntos expirados", "Bonificación especial",
+            "Compra con receta", "Referido nuevo cliente", "Cumpleaños", "Promoción mensual"
+        };
+
+        for (int i = 0; i < 40; i++) {
+            ProgramaFidelizacion programa = programasFidelizacion.get(random.nextInt(programasFidelizacion.size()));
+            String tipo = tipos[random.nextInt(tipos.length)];
+            String descripcion = descripciones[random.nextInt(descripciones.length)];
+            
+            int puntos;
+            if (tipo.equals("CANJE") || tipo.equals("EXPIRACION")) {
+                puntos = -(50 + random.nextInt(451)); // Negativos entre -50 y -500
+            } else {
+                puntos = 25 + random.nextInt(476); // Positivos entre 25 y 500
+            }
+            
+            Pedidos pedido = null;
+            if (tipo.equals("ACUMULACION") && !pedidos.isEmpty()) {
+                pedido = pedidos.get(random.nextInt(pedidos.size()));
+            }
+            
+            createMovimientoPuntos((long)(i + 1), programa, puntos, tipo, descripcion, pedido);
+        }
+    }
+
+    private void createCupones() {
+        String[] codigos = {
+            "DESC10", "DESC15", "DESC20", "DESC25", "FIJO5", "FIJO10", "FIJO15", "FIJO20",
+            "NUEVO10", "VIP15", "CUMPLE20", "REFERIDO", "PROMO25", "ESPECIAL", "WEEKEND"
+        };
+        String[] descripciones = {
+            "Descuento 10% en toda la tienda", "Descuento 15% en medicamentos", "Descuento 20% en vitaminas",
+            "Descuento 25% para VIP", "Descuento fijo S/ 5.00", "Descuento fijo S/ 10.00", "Descuento fijo S/ 15.00",
+            "Descuento fijo S/ 20.00", "Descuento 10% nuevos clientes", "Descuento 15% clientes VIP",
+            "Descuento 20% cumpleaños", "Cupón por referido", "Promoción 25% especial", "Oferta especial",
+            "Descuento fin de semana"
+        };
+
+        for (int i = 0; i < 15; i++) {
+            int puntosRequeridos = 100 + (i * 50);
+            double descuentoPorcentaje = 0.0;
+            double descuentoMonto = 0.0;
+            
+            if (i < 8) {
+                descuentoPorcentaje = 10.0 + (i * 2.5);
+            } else {
+                descuentoMonto = 5.0 + ((i - 8) * 5.0);
+            }
+            
+            int usoMaximo = 10 + random.nextInt(91); // Entre 10 y 100
+            int usoActual = random.nextInt(usoMaximo / 2);
+            
+            createCupon((long)(i + 1), codigos[i], descripciones[i], puntosRequeridos,
+                       descuentoPorcentaje, descuentoMonto, usoMaximo, usoActual);
+        }
+    }
+
+    private void createRecetasDigitales() {
+        String[] estados = {"PENDIENTE", "PROCESADA", "VALIDADA", "RECHAZADA"};
+        String[] textosExtraidos = {
+            "Amoxicilina 500mg - 1 tableta cada 8 horas por 7 días",
+            "Ibuprofeno 400mg - 1 tableta cada 6 horas por 3 días",
+            "Omeprazol 20mg - 1 cápsula en ayunas por 14 días",
+            "Loratadina 10mg - 1 tableta diaria por 5 días",
+            "Azitromicina 500mg - 1 tableta diaria por 3 días",
+            "Paracetamol 500mg - 1 tableta cada 8 horas según necesidad",
+            "Vitamina D3 1000UI - 1 cápsula diaria por 30 días",
+            "Metformina 850mg - 1 tableta cada 12 horas con alimentos",
+            "Atorvastatina 20mg - 1 tableta nocturna",
+            "Losartán 50mg - 1 tableta diaria en la mañana",
+            "Salbutamol inhalador - 2 puff cada 6 horas según necesidad",
+            "Prednisona 20mg - 1 tableta diaria por 5 días"
+        };
+
+        for (int i = 0; i < 12; i++) {
+            String imagenUrl = "/uploads/recetas/receta_" + String.format("%03d", i + 1) + ".jpg";
+            String estado = estados[random.nextInt(estados.length)];
+            String textoExtraido = (estado.equals("PENDIENTE")) ? null : textosExtraidos[i];
+            
+            Clientes cliente = clientes.get(random.nextInt(clientes.size()));
+            Medicos medico = (estado.equals("PENDIENTE")) ? null : medicos.get(random.nextInt(medicos.size()));
+            
+            LocalDateTime fechaCreacion = LocalDateTime.now().minusDays(random.nextInt(30));
+            LocalDateTime fechaProcesamiento = (estado.equals("PENDIENTE")) ? null : fechaCreacion.plusHours(1 + random.nextInt(24));
+            
+            RecetaDigital receta = createRecetaDigital((long)(i + 1), imagenUrl, textoExtraido, estado,
+                                                     fechaCreacion, fechaProcesamiento, cliente, medico);
+            
+            // Crear detalles si la receta está procesada
+            if (!estado.equals("PENDIENTE") && i < productos.size()) {
+                Productos producto = productos.get(i + 25); // Usar productos que requieren receta
+                createRecetaDigitalDetalle((long)(i + 1), textosExtraidos[i].split(" - ")[0], 
+                                         1 + random.nextInt(3), textosExtraidos[i].split(" - ")[1],
+                                         !estado.equals("RECHAZADA"), receta, producto);
+            }
+        }
+    }
+
+    private void createDispositivosClientes() {
+        String[] plataformas = {"ANDROID", "IOS"};
+        
+        for (int i = 0; i < 25; i++) {
+            Clientes cliente = clientes.get(i % clientes.size());
+            String plataforma = plataformas[random.nextInt(plataformas.length)];
+            String fcmToken = "fcm_token_" + plataforma.toLowerCase() + "_" + String.format("%06d", i + 1);
+            boolean activo = random.nextBoolean();
+            
+            createDispositivoCliente((long)(i + 1), cliente, fcmToken, plataforma, activo);
+        }
+    }
+
+    private void createNotificacionesPush() {
+        String[] tipos = {"PEDIDO", "PROMOCION", "SISTEMA", "RECORDATORIO"};
+        String[] titulos = {
+            "Pedido Confirmado", "Pedido en Preparación", "Pedido Listo", "Repartidor en Camino", "Pedido Entregado",
+            "Promoción Especial", "Descuento Exclusivo", "Oferta Limitada", "Nueva Promoción",
+            "Puntos Acumulados", "Receta Validada", "Cupón Disponible", "Nivel Actualizado",
+            "Recordatorio Medicamento", "Cita Médica", "Renovar Receta"
+        };
+        String[] mensajes = {
+            "Tu pedido ha sido confirmado y está en preparación", "Tu pedido está siendo preparado por nuestro equipo",
+            "Tu pedido está listo para envío", "El repartidor está en camino a tu dirección", "Tu pedido ha sido entregado exitosamente",
+            "Descuento 20% en vitaminas. ¡Aprovecha ahora!", "Oferta exclusiva para ti", "Promoción por tiempo limitado",
+            "Nueva promoción disponible en tu app", "Has acumulado puntos con tu última compra", "Tu receta digital ha sido validada",
+            "Tienes un cupón disponible para canjear", "Tu nivel de membresía ha sido actualizado",
+            "Recordatorio: es hora de tomar tu medicamento", "Tienes una cita médica programada", "Es momento de renovar tu receta"
+        };
+
+        for (int i = 0; i < 30; i++) {
+            Clientes cliente = clientes.get(random.nextInt(clientes.size()));
+            String tipo = tipos[random.nextInt(tipos.length)];
+            String titulo = titulos[random.nextInt(titulos.length)];
+            String mensaje = mensajes[random.nextInt(mensajes.length)];
+            boolean leida = random.nextBoolean();
+            
+            Pedidos pedido = null;
+            if (tipo.equals("PEDIDO") && !pedidos.isEmpty()) {
+                pedido = pedidos.get(random.nextInt(pedidos.size()));
+            }
+            
+            LocalDateTime fechaEnvio = LocalDateTime.now().minusDays(random.nextInt(7));
+            
+            createNotificacionPush((long)(i + 1), cliente, titulo, mensaje, tipo, leida, fechaEnvio, pedido);
+        }
+    }
+
+    private void printSummary() {
+        System.out.println("");
+        System.out.println("🎉 ¡SISTEMA COMPLETO CARGADO!");
+        System.out.println("================================");
+        System.out.println("👤 Usuarios: " + usuariosRepository.count());
+        System.out.println("👥 Clientes: " + clientesRepository.count());
+        System.out.println("👨‍⚕️ Médicos: " + medicosRepository.count());
+        System.out.println("👩‍⚕️ Farmacéuticos: " + farmaceuticosRepository.count());
+        System.out.println("🚚 Repartidores: " + repartidoresRepository.count());
+        System.out.println("📦 Productos: " + productosRepository.count());
+        System.out.println("🛒 Pedidos: " + pedidosRepository.count());
+        System.out.println("🎯 Programas Fidelización: " + programaFidelizacionRepository.count());
+        System.out.println("📋 Recetas Digitales: " + recetaDigitalRepository.count());
+        System.out.println("🔔 Notificaciones: " + notificacionPushRepository.count());
+        System.out.println("");
+        System.out.println("🔑 CREDENCIALES PRINCIPALES:");
+        System.out.println("👤 Admin: admin@test.com / password123");
+        System.out.println("👤 Cliente: cliente001@test.com / password123 (DNI: 10000000)");
+        System.out.println("👨‍⚕️ Médico: medico001@test.com / password123");
+        System.out.println("👩‍⚕️ Farmacéutico: farmaceutico001@test.com / password123");
+        System.out.println("🚚 Repartidor: repartidor001@test.com / password123");
+        System.out.println("");
+        System.out.println("🔌 WEBSOCKET LISTO:");
+        System.out.println("📊 Pedido #123 en estado EN_CAMINO");
+        System.out.println("📡 Suscripción: /topic/delivery/123");
+        System.out.println("");
+    }
+}

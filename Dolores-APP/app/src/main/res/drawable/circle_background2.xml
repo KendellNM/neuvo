@@ -1,0 +1,7 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#70B6F5B6"/> <!-- Aquí pones el color del círculo -->
+    <size
+        android:width="200dp"
+        android:height="200dp" /> <!-- Ajusta el tamaño según necesites -->
+    <corners android:radius="100dp" /> <!-- Esto hace el círculo perfecto -->
+</shape>
