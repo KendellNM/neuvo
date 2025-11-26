@@ -20,7 +20,9 @@
     <!-- Colores de texto (modo oscuro) -->
     <color name="black">#FFFFFF</color>
     <color name="white">#000000</color>
-    <color name="dolores">#E0E0E0</color>
+    <color name="dolores">#4CAF50</color>
+    <color name="dolores_light">#1B5E20</color>
+    <color name="dolores_dark">#81C784</color>
     <color name="text_primary">#FFFFFF</color>
     <color name="text_secondary">#B0B0B0</color>
     

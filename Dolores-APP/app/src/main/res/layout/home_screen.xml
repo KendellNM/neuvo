@@ -2,9 +2,11 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/home_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
->
+    android:fitsSystemWindows="true"
+    android:background="?android:attr/colorBackground">
 
     <ScrollView
         android:id="@+id/scroll"
@@ -106,14 +108,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="16dp"
+                android:background="?android:attr/colorBackground">
 
                 <TextView
                     android:id="@+id/tvSectionTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="¿Qué Harás Hoy?"
-                    android:textColor="@color/black"
+                    android:textColor="?android:attr/textColorPrimary"
                     android:textStyle="bold"
                     android:textSize="18sp"
                     android:layout_marginBottom="12dp"/>
@@ -138,16 +141,16 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Comprar Productos"
+                            android:text="🛍️ Comprar Productos"
                             android:textStyle="bold"
-                            android:textColor="@color/black"
+                            android:textColor="?android:attr/textColorPrimary"
                             android:textSize="16sp"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Explora nuestro catálogo completo"
-                            android:textColor="@color/black"
+                            android:textColor="?android:attr/textColorSecondary"
                             android:textSize="13sp"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -160,8 +163,7 @@
                     android:layout_marginBottom="12dp"
                     app:cardUseCompatPadding="true"
                     app:cardCornerRadius="16dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="#1A000000">
+                    app:strokeWidth="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -172,16 +174,16 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Validar Receta"
+                            android:text="📋 Validar Receta"
                             android:textStyle="bold"
-                            android:textColor="@color/black"
+                            android:textColor="?android:attr/textColorPrimary"
                             android:textSize="16sp"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Sube tu receta médica fácilmente"
-                            android:textColor="@color/black"
+                            android:textColor="?android:attr/textColorSecondary"
                             android:textSize="13sp"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -194,8 +196,7 @@
                     android:layout_marginBottom="12dp"
                     app:cardUseCompatPadding="true"
                     app:cardCornerRadius="16dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="#1A000000">
+                    app:strokeWidth="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -206,16 +207,16 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Mis Pedidos"
+                            android:text="📦 Mis Pedidos"
                             android:textStyle="bold"
-                            android:textColor="@color/black"
+                            android:textColor="?android:attr/textColorPrimary"
                             android:textSize="16sp"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Rastrea tu pedido en tiempo real"
-                            android:textColor="@color/black"
+                            android:textColor="?android:attr/textColorSecondary"
                             android:textSize="13sp"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -228,8 +229,7 @@
                     android:layout_marginBottom="24dp"
                     app:cardUseCompatPadding="true"
                     app:cardCornerRadius="16dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="#1A000000">
+                    app:strokeWidth="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -240,16 +240,16 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Habla con un Farmacéutico"
+                            android:text="💊 Habla con un Farmacéutico"
                             android:textStyle="bold"
-                            android:textColor="@color/black"
+                            android:textColor="?android:attr/textColorPrimary"
                             android:textSize="16sp"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Consulta tus dudas ahora"
-                            android:textColor="@color/black"
+                            android:textColor="?android:attr/textColorSecondary"
                             android:textSize="13sp"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>

@@ -2,10 +2,17 @@ package com.example.doloresapp.presentation.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import com.example.doloresapp.LoginActivity
 import com.example.doloresapp.R
+import com.example.doloresapp.data.local.TokenStore
 import com.example.doloresapp.utils.ApiConstants
 import com.example.doloresapp.utils.RoleManager
 import com.example.doloresapp.utils.UserRole
@@ -20,6 +27,7 @@ class HomeActivity : AppCompatActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         
         val userRole = RoleManager.getUserRole(this)
         
@@ -34,6 +42,7 @@ class HomeActivity : AppCompatActivity() {
     
     private fun setupClienteUI() {
         setContentView(R.layout.activity_home_cliente)
+        setupEdgeToEdge(R.id.cliente_root)
         
         tvBienvenida = findViewById(R.id.tv_bienvenida)
         tvRol = findViewById(R.id.tv_rol)
@@ -43,6 +52,9 @@ class HomeActivity : AppCompatActivity() {
         
         tvBienvenida.text = "Bienvenido, $userName"
         tvRol.text = "👤 Cliente"
+        
+        // Botón logout
+        findViewById<View>(R.id.btn_logout)?.setOnClickListener { showLogoutDialog() }
         
         // Botón Ver Productos
         findViewById<Button>(R.id.btn_productos)?.setOnClickListener {
@@ -88,6 +100,7 @@ class HomeActivity : AppCompatActivity() {
     
     private fun setupRepartidorUI() {
         setContentView(R.layout.activity_home_repartidor)
+        setupEdgeToEdge(R.id.repartidor_root)
         
         tvBienvenida = findViewById(R.id.tv_bienvenida)
         tvRol = findViewById(R.id.tv_rol)
@@ -95,8 +108,11 @@ class HomeActivity : AppCompatActivity() {
         val prefs = getSharedPreferences(ApiConstants.Prefs.NAME, MODE_PRIVATE)
         val userName = prefs.getString(ApiConstants.Prefs.USER_EMAIL, "Repartidor")
         
-        tvBienvenida.text = "Bienvenido, $userName"
+        tvBienvenida.text = "Panel de Entregas"
         tvRol.text = "🚚 Repartidor"
+        
+        // Botón logout
+        findViewById<View>(R.id.btn_logout)?.setOnClickListener { showLogoutDialog() }
         
         // Iniciar entrega - Abre el modo repartidor con GPS en tiempo real
         findViewById<Button>(R.id.btn_iniciar_delivery).setOnClickListener {
@@ -121,6 +137,7 @@ class HomeActivity : AppCompatActivity() {
     
     private fun setupAdminUI() {
         setContentView(R.layout.activity_home_admin)
+        setupEdgeToEdge(R.id.admin_root)
         
         tvBienvenida = findViewById(R.id.tv_bienvenida)
         tvRol = findViewById(R.id.tv_rol)
@@ -128,8 +145,11 @@ class HomeActivity : AppCompatActivity() {
         val prefs = getSharedPreferences(ApiConstants.Prefs.NAME, MODE_PRIVATE)
         val userName = prefs.getString(ApiConstants.Prefs.USER_EMAIL, "Admin")
         
-        tvBienvenida.text = "Bienvenido, $userName"
+        tvBienvenida.text = "Panel de Administración"
         tvRol.text = "👨‍💼 Administrador"
+        
+        // Botón logout
+        findViewById<View>(R.id.btn_logout)?.setOnClickListener { showLogoutDialog() }
         
         // Gestionar productos
         findViewById<Button>(R.id.btn_productos).setOnClickListener {
@@ -164,6 +184,7 @@ class HomeActivity : AppCompatActivity() {
     
     private fun setupFarmaceuticoUI() {
         setContentView(R.layout.activity_home_farmaceutico)
+        setupEdgeToEdge(R.id.farmaceutico_root)
         
         tvBienvenida = findViewById(R.id.tv_bienvenida)
         tvRol = findViewById(R.id.tv_rol)
@@ -171,8 +192,11 @@ class HomeActivity : AppCompatActivity() {
         val prefs = getSharedPreferences(ApiConstants.Prefs.NAME, MODE_PRIVATE)
         val userName = prefs.getString(ApiConstants.Prefs.USER_EMAIL, "Farmacéutico")
         
-        tvBienvenida.text = "Bienvenido, $userName"
+        tvBienvenida.text = "Panel de Farmacéutico"
         tvRol.text = "💊 Farmacéutico"
+        
+        // Botón logout
+        findViewById<View>(R.id.btn_logout)?.setOnClickListener { showLogoutDialog() }
         
         // Escanear QR de productos
         findViewById<Button>(R.id.btn_escanear_qr).setOnClickListener {
@@ -198,5 +222,41 @@ class HomeActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btn_notificaciones).setOnClickListener {
             startActivity(Intent(this, NotificacionesActivity::class.java))
         }
+    }
+    
+    private fun setupEdgeToEdge(rootViewId: Int) {
+        val rootView = findViewById<View>(rootViewId)
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(0, systemBars.top, 0, systemBars.bottom)
+            insets
+        }
+    }
+    
+    private fun showLogoutDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Cerrar Sesión")
+            .setMessage("¿Estás seguro que deseas cerrar sesión?")
+            .setPositiveButton("Sí") { _, _ -> logout() }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+    
+    private fun logout() {
+        // Limpiar token
+        TokenStore.clear()
+        
+        // Limpiar SharedPreferences
+        val prefs = getSharedPreferences(ApiConstants.Prefs.NAME, MODE_PRIVATE)
+        prefs.edit().clear().apply()
+        
+        // Limpiar rol
+        RoleManager.clearUserRole(this)
+        
+        // Redirigir al login
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 }
