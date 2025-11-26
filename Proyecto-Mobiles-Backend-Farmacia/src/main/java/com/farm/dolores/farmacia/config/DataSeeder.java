@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-@Component
+// @Component - DESHABILITADO: Usar DataInitializer en su lugar
 @Order(1) // Ejecutar primero
 public class DataSeeder implements CommandLineRunner {
 
