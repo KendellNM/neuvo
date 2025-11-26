@@ -1,7 +1,24 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- Base application theme (Dark Mode). -->
     <style name="Base.Theme.DoloresApp" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <!-- Colores principales (modo oscuro) -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <item name="colorOnSecondary">@color/black</item>
+        
+        <!-- Colores de superficie (modo oscuro) -->
+        <item name="android:colorBackground">@color/background_light</item>
+        <item name="colorSurface">@color/surface_light</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        
+        <!-- Edge-to-edge -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        
+        <!-- Colores de error -->
+        <item name="colorError">@color/error</item>
     </style>
 </resources>

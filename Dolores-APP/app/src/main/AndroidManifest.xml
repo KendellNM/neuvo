@@ -64,6 +64,21 @@
         <activity
             android:name=".presentation.ui.HomeActivity"
             android:exported="false" />
+        <activity
+            android:name=".presentation.ui.ProductosActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.ui.ProductoDetalleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.ui.CarritoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.ui.CheckoutActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.ui.MisPedidosActivity"
+            android:exported="false" />
             
         <!-- Google Maps API Key -->
         <meta-data

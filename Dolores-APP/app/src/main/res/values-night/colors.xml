@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colores principales (modo oscuro) -->
+    <color name="principal">#4CAF50</color>
+    <color name="primary">#4CAF50</color>
+    <color name="primary_dark">#388E3C</color>
+    <color name="primary_light">#81C784</color>
+    
+    <!-- Colores secundarios -->
+    <color name="secondary">#4DD0E1</color>
+    <color name="ingresa">#4DD0E1</color>
+    
+    <!-- Colores de fondo (modo oscuro) -->
+    <color name="hojas">#1E1E1E</color>
+    <color name="dashboard">#2D2D2D</color>
+    <color name="prira">#121212</color>
+    <color name="background_light">#121212</color>
+    <color name="surface_light">#1E1E1E</color>
+    
+    <!-- Colores de texto (modo oscuro) -->
+    <color name="black">#FFFFFF</color>
+    <color name="white">#000000</color>
+    <color name="dolores">#E0E0E0</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B0B0B0</color>
+    
+    <!-- Otros -->
+    <color name="gray_light">#424242</color>
+    <color name="transparent">#00000000</color>
+    <color name="bienvenido">#2E7D32</color>
+    <color name="error">#CF6679</color>
+    <color name="success">#81C784</color>
+    <color name="warning">#FFB74D</color>
+</resources>

@@ -117,7 +117,7 @@ class LoginActivity : AppCompatActivity() {
             loginButton.isEnabled = false
             lifecycleScope.launch {
                 try {
-                    val resp = api.login(AuthRequest(correo = email, password = password))
+                    val resp = api.login(AuthRequest(username = email, password = password))
                     
                     // Guardar token
                     TokenStore.saveToken(resp.token)

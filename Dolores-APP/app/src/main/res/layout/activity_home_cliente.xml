@@ -70,9 +70,16 @@
                     android:padding="16dp">
 
                     <Button
+                        android:id="@+id/btn_productos"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="🛍️ Ver Productos" />
+
+                    <Button
                         android:id="@+id/btn_escanear_qr"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:text="📷 Escanear QR de Producto" />
 
                     <Button
@@ -102,6 +109,20 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="🔔 Notificaciones" />
+
+                    <Button
+                        android:id="@+id/btn_carrito"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="🛒 Mi Carrito" />
+
+                    <Button
+                        android:id="@+id/btn_mis_pedidos"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="📦 Mis Pedidos" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>

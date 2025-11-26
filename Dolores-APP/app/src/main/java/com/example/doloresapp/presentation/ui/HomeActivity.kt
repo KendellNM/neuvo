@@ -44,6 +44,11 @@ class HomeActivity : AppCompatActivity() {
         tvBienvenida.text = "Bienvenido, $userName"
         tvRol.text = "👤 Cliente"
         
+        // Botón Ver Productos
+        findViewById<Button>(R.id.btn_productos)?.setOnClickListener {
+            startActivity(Intent(this, ProductosActivity::class.java))
+        }
+        
         // Botones para cliente
         findViewById<Button>(R.id.btn_escanear_qr).setOnClickListener {
             startActivity(Intent(this, QRScannerActivity::class.java))
@@ -69,6 +74,16 @@ class HomeActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btn_notificaciones).setOnClickListener {
             startActivity(Intent(this, NotificacionesActivity::class.java))
         }
+        
+        // Carrito
+        findViewById<Button>(R.id.btn_carrito)?.setOnClickListener {
+            startActivity(Intent(this, CarritoActivity::class.java))
+        }
+        
+        // Mis Pedidos
+        findViewById<Button>(R.id.btn_mis_pedidos)?.setOnClickListener {
+            startActivity(Intent(this, MisPedidosActivity::class.java))
+        }
     }
     
     private fun setupRepartidorUI() {
@@ -83,22 +98,24 @@ class HomeActivity : AppCompatActivity() {
         tvBienvenida.text = "Bienvenido, $userName"
         tvRol.text = "🚚 Repartidor"
         
-        // Botones para repartidor
+        // Iniciar entrega - Abre el modo repartidor con GPS en tiempo real
         findViewById<Button>(R.id.btn_iniciar_delivery).setOnClickListener {
-            // Abrir modo REPARTIDOR
             val intent = Intent(this, RepartidorActivity::class.java)
-            intent.putExtra("pedido_id", 123L) // Obtener de pedido asignado
-            intent.putExtra("destino_lat", -12.0464)
+            // En producción, estos datos vendrían del pedido asignado
+            intent.putExtra("pedido_id", 123L)
+            intent.putExtra("destino_lat", -12.0464) // Lima, Perú
             intent.putExtra("destino_lng", -77.0428)
             startActivity(intent)
         }
         
+        // Mis entregas pendientes
         findViewById<Button>(R.id.btn_mis_entregas).setOnClickListener {
-            // TODO: Implementar lista de entregas
+            android.widget.Toast.makeText(this, "Próximamente: Lista de entregas pendientes", android.widget.Toast.LENGTH_SHORT).show()
         }
         
+        // Historial de entregas
         findViewById<Button>(R.id.btn_historial).setOnClickListener {
-            // TODO: Implementar historial de entregas
+            android.widget.Toast.makeText(this, "Próximamente: Historial de entregas", android.widget.Toast.LENGTH_SHORT).show()
         }
     }
     
@@ -108,10 +125,41 @@ class HomeActivity : AppCompatActivity() {
         tvBienvenida = findViewById(R.id.tv_bienvenida)
         tvRol = findViewById(R.id.tv_rol)
         
-        tvBienvenida.text = "Panel de Administración"
+        val prefs = getSharedPreferences(ApiConstants.Prefs.NAME, MODE_PRIVATE)
+        val userName = prefs.getString(ApiConstants.Prefs.USER_EMAIL, "Admin")
+        
+        tvBienvenida.text = "Bienvenido, $userName"
         tvRol.text = "👨‍💼 Administrador"
         
-        // TODO: Implementar opciones de admin
+        // Gestionar productos
+        findViewById<Button>(R.id.btn_productos).setOnClickListener {
+            startActivity(Intent(this, ProductosActivity::class.java))
+        }
+        
+        // Ver pedidos (TODO)
+        findViewById<Button>(R.id.btn_pedidos).setOnClickListener {
+            android.widget.Toast.makeText(this, "Próximamente: Gestión de pedidos", android.widget.Toast.LENGTH_SHORT).show()
+        }
+        
+        // Gestionar usuarios (TODO)
+        findViewById<Button>(R.id.btn_usuarios).setOnClickListener {
+            android.widget.Toast.makeText(this, "Próximamente: Gestión de usuarios", android.widget.Toast.LENGTH_SHORT).show()
+        }
+        
+        // Recetas pendientes
+        findViewById<Button>(R.id.btn_recetas).setOnClickListener {
+            startActivity(Intent(this, RecetaDigitalActivity::class.java))
+        }
+        
+        // Reportes (TODO)
+        findViewById<Button>(R.id.btn_reportes).setOnClickListener {
+            android.widget.Toast.makeText(this, "Próximamente: Reportes y estadísticas", android.widget.Toast.LENGTH_SHORT).show()
+        }
+        
+        // Notificaciones
+        findViewById<Button>(R.id.btn_notificaciones).setOnClickListener {
+            startActivity(Intent(this, NotificacionesActivity::class.java))
+        }
     }
     
     private fun setupFarmaceuticoUI() {
@@ -120,9 +168,35 @@ class HomeActivity : AppCompatActivity() {
         tvBienvenida = findViewById(R.id.tv_bienvenida)
         tvRol = findViewById(R.id.tv_rol)
         
-        tvBienvenida.text = "Panel de Farmacéutico"
+        val prefs = getSharedPreferences(ApiConstants.Prefs.NAME, MODE_PRIVATE)
+        val userName = prefs.getString(ApiConstants.Prefs.USER_EMAIL, "Farmacéutico")
+        
+        tvBienvenida.text = "Bienvenido, $userName"
         tvRol.text = "💊 Farmacéutico"
         
-        // TODO: Implementar opciones de farmacéutico
+        // Escanear QR de productos
+        findViewById<Button>(R.id.btn_escanear_qr).setOnClickListener {
+            startActivity(Intent(this, QRScannerActivity::class.java))
+        }
+        
+        // Validar recetas pendientes
+        findViewById<Button>(R.id.btn_validar_recetas).setOnClickListener {
+            startActivity(Intent(this, RecetaDigitalActivity::class.java))
+        }
+        
+        // Ver inventario de productos
+        findViewById<Button>(R.id.btn_ver_productos).setOnClickListener {
+            startActivity(Intent(this, ProductosActivity::class.java))
+        }
+        
+        // Consultas de clientes (TODO)
+        findViewById<Button>(R.id.btn_consultas).setOnClickListener {
+            android.widget.Toast.makeText(this, "Próximamente: Consultas de clientes", android.widget.Toast.LENGTH_SHORT).show()
+        }
+        
+        // Notificaciones
+        findViewById<Button>(R.id.btn_notificaciones).setOnClickListener {
+            startActivity(Intent(this, NotificacionesActivity::class.java))
+        }
     }
 }

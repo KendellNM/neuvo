@@ -1,47 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <com.google.android.material.appbar.MaterialToolbar
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        app:title="Panel de Farmacéutico"
-        app:titleTextColor="@android:color/white" />
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tv_bienvenida"
+        <com.google.android.material.appbar.MaterialToolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:title="Panel de Farmacéutico"
+            app:titleTextColor="@android:color/white" />
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Panel de Farmacéutico"
-            android:textColor="@android:color/white"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:background="?attr/colorPrimary"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tv_rol"
+            <TextView
+                android:id="@+id/tv_bienvenida"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Panel de Farmacéutico"
+                android:textColor="@android:color/white"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_rol"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="💊 Farmacéutico"
+                android:textColor="@android:color/white"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="💊 Farmacéutico"
-            android:textColor="@android:color/white"
-            android:textSize="16sp" />
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Herramientas de Trabajo"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <Button
+                        android:id="@+id/btn_escanear_qr"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="📷 Escanear QR de Producto" />
+
+                    <Button
+                        android:id="@+id/btn_validar_recetas"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="📋 Validar Recetas Pendientes" />
+
+                    <Button
+                        android:id="@+id/btn_ver_productos"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="💊 Inventario de Productos" />
+
+                    <Button
+                        android:id="@+id/btn_consultas"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="💬 Consultas de Clientes" />
+
+                    <Button
+                        android:id="@+id/btn_notificaciones"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="🔔 Notificaciones" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
     </LinearLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="Funcionalidades de farmacéutico en desarrollo..."
-        android:textSize="16sp" />
-</LinearLayout>
+</ScrollView>
