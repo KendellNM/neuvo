@@ -120,7 +120,7 @@ public class DataInitializer implements CommandLineRunner {
             user.setFecha_actualizacion(new Date());
 
             Usuarios savedUser = usuariosRepository.save(user);
-            log.info("✓ Usuario creado: {} (ID: {})", correo, savedUser.getId());
+            log.info("✓ Usuario creado: {} (ID: {})", correo, savedUser.getIdUsuarios());
 
             UsuarioRol usuarioRol = new UsuarioRol();
             usuarioRol.setUsuarios(savedUser);

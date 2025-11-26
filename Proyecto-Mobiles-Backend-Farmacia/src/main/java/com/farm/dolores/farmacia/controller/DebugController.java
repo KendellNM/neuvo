@@ -39,14 +39,14 @@ public class DebugController {
         
         response.put("usuarios", usuarios.stream().map(u -> {
             Map<String, Object> userMap = new HashMap<>();
-            userMap.put("id", u.getId());
+            userMap.put("id", u.getIdUsuarios());
             userMap.put("usuario", u.getUsuario());
             userMap.put("correo", u.getCorreo());
             userMap.put("estado", u.getEstado());
             
             // Buscar roles del usuario
             List<String> rolesUsuario = usuarioRolRepository.findAll().stream()
-                .filter(ur -> ur.getUsuarios().getId().equals(u.getId()))
+                .filter(ur -> ur.getUsuarios().getIdUsuarios().equals(u.getIdUsuarios()))
                 .map(ur -> ur.getRoles().getNombre())
                 .collect(Collectors.toList());
             userMap.put("roles", rolesUsuario);
@@ -56,7 +56,7 @@ public class DebugController {
         
         response.put("roles", roles.stream().map(r -> {
             Map<String, Object> rolMap = new HashMap<>();
-            rolMap.put("id", r.getId());
+            rolMap.put("id", r.getIdRoles());
             rolMap.put("nombre", r.getNombre());
             rolMap.put("descripcion", r.getDescripcion());
             return rolMap;
