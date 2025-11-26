@@ -69,6 +69,12 @@ public class Productos {
     @Column(name = "imagenUrl")
     private String imagenUrl;
 
+    @Column(name = "qrImageUrl")
+    private String qrImageUrl;
+    
+    @Column(name = "barcodeImageUrl")
+    private String barcodeImageUrl;
+
     @Column(name = "indicaciones")
     private String indicaciones;
 

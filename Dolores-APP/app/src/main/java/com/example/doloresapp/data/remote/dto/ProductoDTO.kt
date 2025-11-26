@@ -13,7 +13,10 @@ data class ProductoDTO(
     @SerializedName("imagenUrl")
     val imagen_url: String?,
     val stock: Int,
+    val stockMin: Int? = null,
     val principioActivo: String?,
     val requerireReceta: Boolean?,
+    val codigoBarras: String? = null,
+    val qrImageUrl: String? = null,
     val categoria: CategoriaDTO?
 )

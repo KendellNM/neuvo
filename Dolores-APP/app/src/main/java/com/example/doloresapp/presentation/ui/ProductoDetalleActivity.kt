@@ -1,5 +1,6 @@
 package com.example.doloresapp.presentation.ui
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.View
 import android.widget.*
@@ -14,6 +15,9 @@ import com.example.doloresapp.data.remote.dto.ProductoDTO
 import com.example.doloresapp.data.remote.service.ProductoApiService
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.qrcode.QRCodeWriter
 import kotlinx.coroutines.launch
 
 class ProductoDetalleActivity : AppCompatActivity() {
@@ -65,6 +69,14 @@ class ProductoDetalleActivity : AppCompatActivity() {
                     .into(findViewById(R.id.imgProducto))
                 
                 productoActual = producto
+                
+                // Mostrar QR del producto
+                // Primero intentar cargar la imagen del backend, si no existe, generar localmente
+                if (!producto.qrImageUrl.isNullOrEmpty()) {
+                    mostrarQRDesdeUrl(producto.qrImageUrl, producto.codigoBarras)
+                } else if (!producto.codigoBarras.isNullOrEmpty()) {
+                    mostrarQR(producto.codigoBarras)
+                }
                 
                 // Botón agregar al carrito
                 findViewById<MaterialButton>(R.id.btnAgregarCarrito).setOnClickListener {
@@ -131,6 +143,68 @@ class ProductoDetalleActivity : AppCompatActivity() {
                 Toast.makeText(this@ProductoDetalleActivity, 
                     "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+    
+    private fun mostrarQRDesdeUrl(qrUrl: String, codigoBarras: String?) {
+        try {
+            val cardQR = findViewById<MaterialCardView>(R.id.cardQR)
+            val imgQR = findViewById<ImageView>(R.id.imgQR)
+            val tvCodigoBarras = findViewById<TextView>(R.id.tvCodigoBarras)
+            
+            // Construir URL completa si es relativa
+            val fullUrl = if (qrUrl.startsWith("http")) qrUrl 
+                else com.example.doloresapp.utils.Constants.BASE_URL.trimEnd('/') + qrUrl
+            
+            // Cargar imagen del backend
+            Glide.with(this)
+                .load(fullUrl)
+                .placeholder(R.drawable.ic_producto_placeholder)
+                .into(imgQR)
+            
+            tvCodigoBarras.text = "Código: ${codigoBarras ?: "N/A"}"
+            cardQR.visibility = View.VISIBLE
+        } catch (e: Exception) {
+            // Si falla, intentar generar localmente
+            codigoBarras?.let { mostrarQR(it) }
+        }
+    }
+    
+    private fun mostrarQR(codigoBarras: String) {
+        try {
+            val cardQR = findViewById<MaterialCardView>(R.id.cardQR)
+            val imgQR = findViewById<ImageView>(R.id.imgQR)
+            val tvCodigoBarras = findViewById<TextView>(R.id.tvCodigoBarras)
+            
+            // Generar QR localmente
+            val qrBitmap = generarQRCode(codigoBarras, 300)
+            
+            if (qrBitmap != null) {
+                imgQR.setImageBitmap(qrBitmap)
+                tvCodigoBarras.text = "Código: $codigoBarras"
+                cardQR.visibility = View.VISIBLE
+            }
+        } catch (e: Exception) {
+            // Si falla, simplemente no mostrar el QR
+        }
+    }
+    
+    private fun generarQRCode(contenido: String, size: Int): Bitmap? {
+        return try {
+            val writer = QRCodeWriter()
+            val bitMatrix = writer.encode(contenido, BarcodeFormat.QR_CODE, size, size)
+            val width = bitMatrix.width
+            val height = bitMatrix.height
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+            
+            for (x in 0 until width) {
+                for (y in 0 until height) {
+                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
+                }
+            }
+            bitmap
+        } catch (e: Exception) {
+            null
         }
     }
     

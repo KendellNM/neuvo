@@ -87,34 +87,38 @@ class QRScannerActivity : AppCompatActivity() {
     }
     
     private fun handleQRCode(qrCode: String) {
-        try {
-            val productoId = qrCode.toLong()
-            fetchProducto(productoId)
-        } catch (e: NumberFormatException) {
-            Toast.makeText(this, "QR inválido", Toast.LENGTH_SHORT).show()
-            isScanning = true
-        }
+        // Intentar primero como código de barras, luego como ID
+        fetchProducto(qrCode)
     }
     
-    private fun fetchProducto(productoId: Long) {
+    private fun fetchProducto(codigo: String) {
         lifecycleScope.launch {
             try {
-                val response = qrApiService.getProductoByQR(productoId)
+                // Primero intentar buscar por código de barras
+                var response = qrApiService.getProductoByCodigoBarras(codigo)
+                
+                // Si no encuentra, intentar como ID numérico
+                if (!response.isSuccessful || response.body() == null) {
+                    try {
+                        val productoId = codigo.toLong()
+                        response = qrApiService.getProductoByQR(productoId)
+                    } catch (e: NumberFormatException) {
+                        // No es un número válido
+                    }
+                }
+                
                 if (response.isSuccessful && response.body() != null) {
                     val producto = response.body()!!
                     
-                    // Retornar resultado
-                    val intent = Intent().apply {
-                        putExtra("producto_id", producto.id)
-                        putExtra("producto_nombre", producto.nombre)
-                        putExtra("producto_precio", producto.precio)
-                    }
-                    setResult(RESULT_OK, intent)
+                    // Abrir directamente el detalle del producto
+                    val intent = Intent(this@QRScannerActivity, ProductoDetalleActivity::class.java)
+                    intent.putExtra("PRODUCTO_ID", producto.id)
+                    startActivity(intent)
                     finish()
                 } else {
                     Toast.makeText(
                         this@QRScannerActivity,
-                        "Producto no encontrado",
+                        "Producto no encontrado: $codigo",
                         Toast.LENGTH_SHORT
                     ).show()
                     isScanning = true

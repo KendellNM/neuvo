@@ -90,6 +90,13 @@
         <activity
             android:name=".presentation.ui.GestionUsuariosActivity"
             android:exported="false" />
+        <activity
+            android:name=".presentation.ui.GestionStockActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.ui.VentaPresencialActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
             
         <!-- OSMDroid no requiere API Key - 100% GRATIS -->
             

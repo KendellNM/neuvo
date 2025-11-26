@@ -21,4 +21,7 @@ interface ProductoApiService {
     
     @GET("api/productos/buscar")
     suspend fun buscarProductos(@Query("nombre") nombre: String): List<ProductoDTO>
+    
+    @retrofit2.http.PUT("api/productos/{id}/stock")
+    suspend fun actualizarStock(@Path("id") id: Long, @retrofit2.http.Query("stock") stock: Int): ProductoDTO
 }

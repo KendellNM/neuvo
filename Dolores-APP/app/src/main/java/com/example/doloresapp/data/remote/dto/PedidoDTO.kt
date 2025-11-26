@@ -62,3 +62,15 @@ data class PedidoDetalleRequest(
     val cantidad: Int,
     val precioUnitario: Double
 )
+
+// Para venta presencial (sin delivery)
+data class CrearPedidoPresencialRequest(
+    val detalles: List<DetallePedidoRequest>,
+    val observaciones: String? = null
+)
+
+data class DetallePedidoRequest(
+    val productoId: Long,
+    val cantidad: Int,
+    val precioUnitario: Double
+)

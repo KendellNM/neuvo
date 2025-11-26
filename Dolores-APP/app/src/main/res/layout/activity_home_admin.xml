@@ -136,6 +136,15 @@
                             style="@style/Widget.Material3.Button.TonalButton" />
 
                         <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_stock"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:layout_marginTop="8dp"
+                            android:text="📊 Control de Stock"
+                            app:cornerRadius="12dp"
+                            style="@style/Widget.Material3.Button.TonalButton" />
+
+                        <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_recetas"
                             android:layout_width="match_parent"
                             android:layout_height="56dp"

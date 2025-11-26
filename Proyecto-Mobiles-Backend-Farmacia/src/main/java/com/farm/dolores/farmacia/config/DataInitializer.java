@@ -14,6 +14,7 @@ import com.farm.dolores.farmacia.repository.RepartidoresRepository;
 import com.farm.dolores.farmacia.repository.RolesRepository;
 import com.farm.dolores.farmacia.repository.UsuarioRolRepository;
 import com.farm.dolores.farmacia.repository.UsuariosRepository;
+import com.farm.dolores.farmacia.service.QRCodeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -38,6 +39,7 @@ public class DataInitializer implements CommandLineRunner {
     private final ProductosRepository productosRepository;
     private final RepartidoresRepository repartidoresRepository;
     private final ClientesRepository clientesRepository;
+    private final QRCodeService qrCodeService;
 
     @Override
     @Transactional
@@ -346,6 +348,19 @@ public class DataInitializer implements CommandLineRunner {
         p.setFecha_vencimiento(fechaVenc);
         p.setFecha_registro(new Date());
         p.setEstado("activo");
-        productosRepository.save(p);
+        
+        Productos saved = productosRepository.save(p);
+        
+        // Generar QR para el producto
+        try {
+            String qrUrl = qrCodeService.generarQRProducto(saved.getIdProductos(), codigo);
+            if (qrUrl != null) {
+                saved.setQrImageUrl(qrUrl);
+                productosRepository.save(saved);
+                log.info("✓ QR generado para: {}", nombre);
+            }
+        } catch (Exception e) {
+            log.warn("No se pudo generar QR para {}: {}", nombre, e.getMessage());
+        }
     }
 }

@@ -113,9 +113,9 @@
                             android:id="@+id/btn_escanear_qr"
                             android:layout_width="match_parent"
                             android:layout_height="56dp"
-                            android:text="📷 Escanear QR de Producto"
+                            android:text="🛒 Venta Presencial (Escanear)"
                             app:cornerRadius="12dp"
-                            style="@style/Widget.Material3.Button.TonalButton" />
+                            style="@style/Widget.Material3.Button" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_validar_recetas"
@@ -132,6 +132,15 @@
                             android:layout_height="56dp"
                             android:layout_marginTop="8dp"
                             android:text="💊 Inventario de Productos"
+                            app:cornerRadius="12dp"
+                            style="@style/Widget.Material3.Button.TonalButton" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_stock"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:layout_marginTop="8dp"
+                            android:text="📊 Control de Stock"
                             app:cornerRadius="12dp"
                             style="@style/Widget.Material3.Button.TonalButton" />
 

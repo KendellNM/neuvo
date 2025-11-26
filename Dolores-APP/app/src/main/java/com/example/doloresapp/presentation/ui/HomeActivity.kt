@@ -201,6 +201,11 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, GestionUsuariosActivity::class.java))
         }
         
+        // Control de stock
+        findViewById<Button>(R.id.btn_stock).setOnClickListener {
+            startActivity(Intent(this, GestionStockActivity::class.java))
+        }
+        
         // Recetas pendientes
         findViewById<Button>(R.id.btn_recetas).setOnClickListener {
             startActivity(Intent(this, RecetaDigitalActivity::class.java))
@@ -234,9 +239,9 @@ class HomeActivity : AppCompatActivity() {
         // Botón logout
         findViewById<View>(R.id.btn_logout)?.setOnClickListener { showLogoutDialog() }
         
-        // Escanear QR de productos
+        // Escanear QR de productos (solo ver detalle)
         findViewById<Button>(R.id.btn_escanear_qr).setOnClickListener {
-            startActivity(Intent(this, QRScannerActivity::class.java))
+            startActivity(Intent(this, VentaPresencialActivity::class.java))
         }
         
         // Validar recetas pendientes
@@ -247,6 +252,11 @@ class HomeActivity : AppCompatActivity() {
         // Ver inventario de productos
         findViewById<Button>(R.id.btn_ver_productos).setOnClickListener {
             startActivity(Intent(this, ProductosActivity::class.java))
+        }
+        
+        // Control de stock
+        findViewById<Button>(R.id.btn_stock).setOnClickListener {
+            startActivity(Intent(this, GestionStockActivity::class.java))
         }
         
         // Consultas de clientes (TODO)

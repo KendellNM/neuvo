@@ -37,6 +37,9 @@ public class ProductosController {
 
     @Autowired
     private ProductosService productosService;
+    
+    @Autowired
+    private com.farm.dolores.farmacia.service.QRCodeService qrCodeService;
 
     @GetMapping
     public ResponseEntity<List<Productos>> readAll() {
@@ -98,6 +101,17 @@ public class ProductosController {
     public ResponseEntity<Productos> create(@Valid @RequestBody Productos productos) {
         try {
             Productos productosCreated = productosService.create(productos);
+            
+            // Generar QR automáticamente
+            String qrUrl = qrCodeService.generarQRProducto(
+                productosCreated.getIdProductos(), 
+                productosCreated.getCodigoBarras()
+            );
+            if (qrUrl != null) {
+                productosCreated.setQrImageUrl(qrUrl);
+                productosCreated = productosService.update(productosCreated);
+            }
+            
             return new ResponseEntity<>(productosCreated, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -210,6 +224,249 @@ public class ProductosController {
             return new ResponseEntity<>(productosService.update(productos), HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PutMapping("/{id}/stock")
+    @Operation(
+        summary = "Actualizar stock de producto",
+        description = "Actualiza el stock de un producto específico"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Stock actualizado"),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+    })
+    public ResponseEntity<Productos> updateStock(
+            @PathVariable("id") Long id,
+            @RequestParam("stock") Integer stock) {
+        try {
+            Optional<Productos> opt = productosService.read(id);
+            if (opt.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            Productos producto = opt.get();
+            producto.setStock(stock);
+            Productos updated = productosService.update(producto);
+            return new ResponseEntity<>(updated, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/{id}/qr")
+    @Operation(
+        summary = "Obtener QR del producto",
+        description = "Retorna la URL de la imagen QR del producto. Si no existe, la genera."
+    )
+    public ResponseEntity<?> getQR(@PathVariable("id") Long id) {
+        try {
+            Optional<Productos> opt = productosService.read(id);
+            if (opt.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            
+            Productos producto = opt.get();
+            
+            // Si no tiene QR, generarlo
+            if (producto.getQrImageUrl() == null || producto.getQrImageUrl().isEmpty()) {
+                String qrUrl = qrCodeService.generarQRProducto(
+                    producto.getIdProductos(), 
+                    producto.getCodigoBarras()
+                );
+                if (qrUrl != null) {
+                    producto.setQrImageUrl(qrUrl);
+                    productosService.update(producto);
+                }
+            }
+            
+            java.util.Map<String, String> response = new java.util.HashMap<>();
+            response.put("qrImageUrl", producto.getQrImageUrl());
+            response.put("codigoBarras", producto.getCodigoBarras());
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/{id}/qr/regenerar")
+    @Operation(
+        summary = "Regenerar QR del producto",
+        description = "Genera una nueva imagen QR para el producto"
+    )
+    public ResponseEntity<?> regenerarQR(@PathVariable("id") Long id) {
+        try {
+            Optional<Productos> opt = productosService.read(id);
+            if (opt.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            
+            Productos producto = opt.get();
+            String qrUrl = qrCodeService.generarQRProducto(
+                producto.getIdProductos(), 
+                producto.getCodigoBarras()
+            );
+            
+            if (qrUrl != null) {
+                producto.setQrImageUrl(qrUrl);
+                productosService.update(producto);
+                
+                java.util.Map<String, String> response = new java.util.HashMap<>();
+                response.put("qrImageUrl", qrUrl);
+                response.put("mensaje", "QR regenerado exitosamente");
+                return ResponseEntity.ok(response);
+            }
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error generando QR");
+            
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/qr/generar-todos")
+    @Operation(
+        summary = "Generar QR para todos los productos",
+        description = "Genera imágenes QR para todos los productos que no tengan una"
+    )
+    public ResponseEntity<?> generarTodosQR() {
+        try {
+            List<Productos> productos = productosService.readAll();
+            int generados = 0;
+            
+            for (Productos producto : productos) {
+                if (producto.getQrImageUrl() == null || producto.getQrImageUrl().isEmpty()) {
+                    String qrUrl = qrCodeService.generarQRProducto(
+                        producto.getIdProductos(), 
+                        producto.getCodigoBarras()
+                    );
+                    if (qrUrl != null) {
+                        producto.setQrImageUrl(qrUrl);
+                        productosService.update(producto);
+                        generados++;
+                    }
+                }
+            }
+            
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("totalProductos", productos.size());
+            response.put("qrGenerados", generados);
+            response.put("mensaje", "QR generados exitosamente");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @PostMapping("/codigos/generar-todos")
+    @Operation(
+        summary = "Generar QR y códigos de barras para todos los productos",
+        description = "Genera imágenes QR y códigos de barras para todos los productos. Las imágenes se guardan en el servidor."
+    )
+    public ResponseEntity<?> generarTodosCodigos() {
+        try {
+            List<Productos> productos = productosService.readAll();
+            int qrGenerados = 0;
+            int barcodesGenerados = 0;
+            
+            for (Productos producto : productos) {
+                boolean actualizado = false;
+                
+                // Generar QR si no existe
+                if (producto.getQrImageUrl() == null || producto.getQrImageUrl().isEmpty()) {
+                    String qrUrl = qrCodeService.generarQRProducto(
+                        producto.getIdProductos(), 
+                        producto.getCodigoBarras()
+                    );
+                    if (qrUrl != null) {
+                        producto.setQrImageUrl(qrUrl);
+                        qrGenerados++;
+                        actualizado = true;
+                    }
+                }
+                
+                // Generar código de barras si no existe
+                if (producto.getBarcodeImageUrl() == null || producto.getBarcodeImageUrl().isEmpty()) {
+                    String barcodeUrl = qrCodeService.generarCodigoBarrasProducto(
+                        producto.getIdProductos(), 
+                        producto.getCodigoBarras()
+                    );
+                    if (barcodeUrl != null) {
+                        producto.setBarcodeImageUrl(barcodeUrl);
+                        barcodesGenerados++;
+                        actualizado = true;
+                    }
+                }
+                
+                if (actualizado) {
+                    productosService.update(producto);
+                }
+            }
+            
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("totalProductos", productos.size());
+            response.put("qrGenerados", qrGenerados);
+            response.put("barcodesGenerados", barcodesGenerados);
+            response.put("mensaje", "Códigos generados exitosamente");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @GetMapping("/{id}/codigos")
+    @Operation(
+        summary = "Obtener QR y código de barras del producto",
+        description = "Retorna las URLs de las imágenes QR y código de barras. Si no existen, las genera."
+    )
+    public ResponseEntity<?> getCodigos(@PathVariable("id") Long id) {
+        try {
+            Optional<Productos> opt = productosService.read(id);
+            if (opt.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            
+            Productos producto = opt.get();
+            boolean actualizado = false;
+            
+            // Generar QR si no existe
+            if (producto.getQrImageUrl() == null || producto.getQrImageUrl().isEmpty()) {
+                String qrUrl = qrCodeService.generarQRProducto(
+                    producto.getIdProductos(), 
+                    producto.getCodigoBarras()
+                );
+                if (qrUrl != null) {
+                    producto.setQrImageUrl(qrUrl);
+                    actualizado = true;
+                }
+            }
+            
+            // Generar código de barras si no existe
+            if (producto.getBarcodeImageUrl() == null || producto.getBarcodeImageUrl().isEmpty()) {
+                String barcodeUrl = qrCodeService.generarCodigoBarrasProducto(
+                    producto.getIdProductos(), 
+                    producto.getCodigoBarras()
+                );
+                if (barcodeUrl != null) {
+                    producto.setBarcodeImageUrl(barcodeUrl);
+                    actualizado = true;
+                }
+            }
+            
+            if (actualizado) {
+                productosService.update(producto);
+            }
+            
+            java.util.Map<String, String> response = new java.util.HashMap<>();
+            response.put("qrImageUrl", producto.getQrImageUrl());
+            response.put("barcodeImageUrl", producto.getBarcodeImageUrl());
+            response.put("codigoBarras", producto.getCodigoBarras());
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

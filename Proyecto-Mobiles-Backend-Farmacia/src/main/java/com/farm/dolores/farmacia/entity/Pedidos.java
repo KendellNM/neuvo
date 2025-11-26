@@ -56,6 +56,9 @@ public class Pedidos {
 
     @Column(name = "problemas")
     private String problemas;
+    
+    @Column(name = "tipoVenta")
+    private String tipoVenta; // DELIVERY, PRESENCIAL
 
     @ManyToOne
     @JoinColumn(name = "clientes_id")

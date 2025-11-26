@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Date;
 import java.util.stream.Collectors;
 import com.farm.dolores.farmacia.dto.CrearPedidoMobileRequest;
+import com.farm.dolores.farmacia.dto.CrearPedidoPresencialRequest;
 import com.farm.dolores.farmacia.repository.ClientesRepository;
 import com.farm.dolores.farmacia.repository.DireccionesRepository;
 import com.farm.dolores.farmacia.repository.ProductosRepository;
@@ -314,6 +315,75 @@ public class PedidosController {
             return ResponseEntity.ok(pedidos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener pedidos del cliente");
+        }
+    }
+
+    // ==================== VENTA PRESENCIAL (SIN DELIVERY) ====================
+
+    @Operation(summary = "Crear pedido presencial (venta en farmacia)", 
+               description = "Endpoint para que el farmacéutico registre ventas presenciales escaneando productos. Sin delivery.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Venta registrada exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+    })
+    @PostMapping("/presencial")
+    public ResponseEntity<?> crearPedidoPresencial(@RequestBody CrearPedidoPresencialRequest request) {
+        try {
+            // Crear pedido presencial
+            Pedidos pedido = new Pedidos();
+            pedido.setFechaPedido(new Date());
+            pedido.setEstado("COMPLETADO"); // Venta presencial se completa inmediatamente
+            pedido.setMetodoPago("EFECTIVO");
+            pedido.setObservaciones(request.getObservaciones() != null ? request.getObservaciones() : "Venta presencial");
+            pedido.setTipoVenta("PRESENCIAL"); // Marcar como venta presencial
+            
+            // Calcular totales
+            double subtotal = 0.0;
+            if (request.getDetalles() != null) {
+                for (CrearPedidoPresencialRequest.DetallePedidoRequest detalle : request.getDetalles()) {
+                    subtotal += detalle.getCantidad() * detalle.getPrecioUnitario();
+                }
+            }
+            
+            pedido.setSubtotal(subtotal);
+            pedido.setCostoDelivery(0.0); // Sin costo de delivery
+            pedido.setDescuento(0.0);
+            pedido.setTotal(subtotal);
+            
+            // Generar número de pedido
+            Long count = pedidosRepository.count();
+            pedido.setNumeroPedido((int) (count + 1));
+            
+            // Guardar pedido
+            Pedidos pedidoGuardado = pedidosRepository.save(pedido);
+            
+            // Crear detalles del pedido y actualizar stock
+            if (request.getDetalles() != null) {
+                for (CrearPedidoPresencialRequest.DetallePedidoRequest detalleReq : request.getDetalles()) {
+                    Optional<Productos> productoOpt = productosRepository.findById(detalleReq.getProductoId());
+                    if (productoOpt.isPresent()) {
+                        PedidoDetalle detalle = new PedidoDetalle();
+                        detalle.setProductos(productoOpt.get());
+                        detalle.setCantidad(detalleReq.getCantidad());
+                        detalle.setPrecioUnitario(detalleReq.getPrecioUnitario());
+                        detalle.setSubtotal(detalleReq.getCantidad() * detalleReq.getPrecioUnitario());
+                        pedidoDetalleRepository.save(detalle);
+                        
+                        // Actualizar stock
+                        Productos producto = productoOpt.get();
+                        if (producto.getStock() != null) {
+                            producto.setStock(producto.getStock() - detalleReq.getCantidad());
+                            productosRepository.save(producto);
+                        }
+                    }
+                }
+            }
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(pedidoGuardado);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error al registrar venta presencial: " + e.getMessage());
         }
     }
 }
