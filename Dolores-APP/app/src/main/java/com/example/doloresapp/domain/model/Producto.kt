@@ -5,19 +5,19 @@ import com.example.doloresapp.data.remote.dto.ProductoDTO
 import java.io.Serializable
 
 data class Producto(
-    val id: Int,
+    val id: Long,
     val nombre: String,
-    val descripcion: String,
+    val descripcion: String?,
     val precio: Double,
-    val concentracion: String,
+    val concentracion: String?,
     val precioOferta: Double?,
     val imagenUrl: String?,
     val stock: Int,
-    val categoriaId: Int
+    val categoriaId: Long?
 ) : Serializable
 
 data class Categoria(
-    val id: Int,
+    val id: Long,
     val nombre: String
 )
 
@@ -28,9 +28,9 @@ fun ProductoDTO.toDomain() = Producto(
     precio = this.precio,
     concentracion = this.concentracion,
     precioOferta = this.precioOferta,
-    imagenUrl = this.imagenUrl,
+    imagenUrl = this.imagen_url,
     stock = this.stock,
-    categoriaId = this.categoriaId
+    categoriaId = this.categoria?.id
 )
 
 fun CategoriaDTO.toDomain() = Categoria(

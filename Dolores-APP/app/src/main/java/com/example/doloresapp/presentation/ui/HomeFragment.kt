@@ -1,13 +1,19 @@
 package com.example.doloresapp.presentation.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import com.example.doloresapp.R
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
+import com.example.doloresapp.LoginActivity
+import com.example.doloresapp.data.local.TokenStore
 import com.example.doloresapp.data.remote.NetworkClient
 import com.example.doloresapp.data.remote.UserApi
+import com.example.doloresapp.utils.ApiConstants
+import com.example.doloresapp.utils.RoleManager
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment(R.layout.home_screen) {
@@ -56,6 +62,42 @@ class HomeFragment : Fragment(R.layout.home_screen) {
                 .addToBackStack(null)
                 .commit()
         }
+
+        // Botón de cerrar sesión
+        view.findViewById<View>(R.id.btnLogout)?.setOnClickListener {
+            showLogoutDialog()
+        }
+    }
+
+    private fun showLogoutDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Cerrar Sesión")
+            .setMessage("¿Estás seguro que deseas cerrar sesión?")
+            .setPositiveButton("Sí") { _, _ ->
+                logout()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun logout() {
+        // Limpiar token
+        TokenStore.clear()
+        
+        // Limpiar SharedPreferences
+        val prefs = requireContext().getSharedPreferences(ApiConstants.Prefs.NAME, android.content.Context.MODE_PRIVATE)
+        prefs.edit()
+            .clear()
+            .apply()
+        
+        // Limpiar rol
+        RoleManager.clearUserRole(requireContext())
+        
+        // Redirigir al login
+        val intent = Intent(requireContext(), LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        requireActivity().finish()
     }
 }
 

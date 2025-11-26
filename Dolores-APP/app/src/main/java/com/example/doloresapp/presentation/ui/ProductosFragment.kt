@@ -43,7 +43,7 @@ class ProductosFragment : Fragment(R.layout.listproducts_layout) {
 
     private lateinit var adapter: EnhancedProductosAdapter
     private var allProducts: List<Producto> = emptyList()
-    private var selectedCategoryId: Int? = null
+    private var selectedCategoryId: Long? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
@@ -144,7 +144,7 @@ class ProductosFragment : Fragment(R.layout.listproducts_layout) {
         val query = view?.findViewById<EditText>(R.id.search_edittext)?.text?.toString()?.trim().orEmpty()
 
         val filtered = allProducts.filter { p ->
-            val byText = if (query.isBlank()) true else p.nombre.contains(query, ignoreCase = true) || p.descripcion.contains(query, ignoreCase = true)
+            val byText = if (query.isBlank()) true else p.nombre.contains(query, ignoreCase = true) || (p.descripcion?.contains(query, ignoreCase = true) ?: false)
             val byCategory = selectedCategoryId?.let { cid -> p.categoriaId == cid } ?: true
             byText && byCategory
         }

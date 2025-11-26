@@ -39,14 +39,15 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent" />
 
-                <!-- Logo (placeholder) -->
+                <!-- Botón Cerrar Sesión -->
                 <ImageView
-                    android:id="@+id/ivLogo"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-
-                    android:src="@drawable/ic_logo"
-                    android:contentDescription="Logo"
+                    android:id="@+id/btnLogout"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@android:drawable/ic_lock_power_off"
+                    android:contentDescription="Cerrar Sesión"
+                    android:padding="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 

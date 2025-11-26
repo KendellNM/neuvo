@@ -17,7 +17,7 @@ object CartRepository {
     }
 
     @Synchronized
-    fun remove(productId: Int, quantity: Int = 1) {
+    fun remove(productId: Long, quantity: Int = 1) {
         val idx = items.indexOfFirst { it.product.id == productId }
         if (idx == -1) return
         val entry = items[idx]

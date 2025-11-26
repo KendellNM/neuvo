@@ -70,29 +70,34 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void initializeTestUsers() {
+        log.info("═══════════════════════════════════════════════════════════");
         log.info("Inicializando usuarios de prueba...");
+        log.info("═══════════════════════════════════════════════════════════");
 
         // Usuario Cliente
-        crearUsuarioSiNoExiste("cliente@farmacia.com", "cliente123", "CLIENTE", "12345678");
+        log.info("Creando usuario CLIENTE...");
+        crearUsuarioSiNoExiste("cliente@dolores.com", "cliente123", "CLIENTE", "12345678");
         
-        // Usuario Repartidor
-        crearUsuarioSiNoExiste("repartidor@farmacia.com", "repartidor123", "REPARTIDOR", "87654321");
+        // Usuario Repartidor (DELIVERY)
+        log.info("Creando usuario REPARTIDOR...");
+        crearUsuarioSiNoExiste("delivery@dolores.com", "delivery123", "REPARTIDOR", "87654321");
         
         // Usuario Farmacéutico
-        crearUsuarioSiNoExiste("farmaceutico@farmacia.com", "farmaceutico123", "FARMACEUTICO", "11223344");
+        log.info("Creando usuario FARMACEUTICO...");
+        crearUsuarioSiNoExiste("farmaceutico@dolores.com", "farmaceutico123", "FARMACEUTICO", "11223344");
 
-        log.info("✓ Usuarios de prueba creados");
         log.info("═══════════════════════════════════════════════════════════");
-        log.info("  USUARIOS DE PRUEBA:");
-        log.info("  📧 admin@farmacia.com / admin123 (ADMIN)");
-        log.info("  📧 cliente@farmacia.com / cliente123 (CLIENTE)");
-        log.info("  📧 repartidor@farmacia.com / repartidor123 (REPARTIDOR)");
-        log.info("  📧 farmaceutico@farmacia.com / farmaceutico123 (FARMACEUTICO)");
+        log.info("  ✅ USUARIOS DE PRUEBA DISPONIBLES:");
+        log.info("  📧 admin@dolores.com / admin123 (ADMIN)");
+        log.info("  📧 cliente@dolores.com / cliente123 (CLIENTE)");
+        log.info("  📧 delivery@dolores.com / delivery123 (REPARTIDOR)");
+        log.info("  📧 farmaceutico@dolores.com / farmaceutico123 (FARMACEUTICO)");
         log.info("═══════════════════════════════════════════════════════════");
     }
 
     private void crearUsuarioSiNoExiste(String correo, String password, String rolNombre, String dni) {
         if (usuariosRepository.findByCorreo(correo).isPresent()) {
+            log.info("Usuario {} ya existe, omitiendo...", correo);
             return;
         }
 
@@ -101,7 +106,10 @@ public class DataInitializer implements CommandLineRunner {
                 .filter(r -> r.getNombre().equals(rolNombre))
                 .findFirst().orElse(null);
 
-            if (rol == null) return;
+            if (rol == null) {
+                log.error("❌ No se encontró el rol {} para crear usuario {}", rolNombre, correo);
+                return;
+            }
 
             Usuarios user = new Usuarios();
             user.setUsuario(correo.split("@")[0]);
@@ -112,15 +120,17 @@ public class DataInitializer implements CommandLineRunner {
             user.setFecha_actualizacion(new Date());
 
             Usuarios savedUser = usuariosRepository.save(user);
+            log.info("✓ Usuario creado: {} (ID: {})", correo, savedUser.getId());
 
             UsuarioRol usuarioRol = new UsuarioRol();
             usuarioRol.setUsuarios(savedUser);
             usuarioRol.setRoles(rol);
             usuarioRol.setEstado("activo");
             usuarioRolRepository.save(usuarioRol);
+            log.info("✓ Rol {} asignado a {}", rolNombre, correo);
 
         } catch (Exception e) {
-            log.error("Error creando usuario {}: {}", correo, e.getMessage());
+            log.error("❌ Error creando usuario {}: {}", correo, e.getMessage(), e);
         }
     }
 
@@ -149,7 +159,7 @@ public class DataInitializer implements CommandLineRunner {
             // Crear el usuario admin
             Usuarios adminUser = new Usuarios();
             adminUser.setUsuario("admin");
-            adminUser.setCorreo("admin@farmacia.com");
+            adminUser.setCorreo("admin@dolores.com");
             adminUser.setContrasena(passwordEncoder.encode("admin123")); // Contraseña por defecto
             adminUser.setEstado("activo");
             adminUser.setFecha_creacion(new Date());
@@ -168,7 +178,7 @@ public class DataInitializer implements CommandLineRunner {
             log.info("✓ Usuario admin creado exitosamente");
             log.info("  - Usuario: admin");
             log.info("  - Contraseña: admin123");
-            log.info("  - Correo: admin@farmacia.com");
+            log.info("  - Correo: admin@dolores.com");
             log.warn("⚠ IMPORTANTE: Cambia la contraseña del admin después del primer inicio de sesión");
 
         } catch (Exception e) {
