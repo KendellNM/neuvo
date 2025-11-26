@@ -350,9 +350,9 @@ override fun onCreate(savedInstanceState: Bundle?) {
 - [x] `RoleManager.kt` creado ✅
 - [x] `HomeActivity.kt` creado ✅
 - [x] Layouts por rol creados ✅
-- [ ] `AuthResponse.kt` con roles ⚠️ **CREAR**
-- [ ] `LoginActivity.kt` actualizado ⚠️ **ACTUALIZAR**
-- [ ] Verificación de rol en activities ⚠️ **AGREGAR**
+- [x] `AuthResponseDto.kt` con roles ✅
+- [x] `LoginActivity.kt` actualizado ✅
+- [x] Verificación de rol en activities ✅
 - [ ] Testing con diferentes usuarios ⚠️ **PROBAR**
 
 ---
@@ -416,4 +416,4 @@ RoleManager.saveUserRole(this, userRole)
 
 ---
 
-**Última actualización:** 2025-01-25
+**Última actualización:** 2025-11-26 - Integración completa

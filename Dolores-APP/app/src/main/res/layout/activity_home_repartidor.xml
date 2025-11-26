@@ -16,7 +16,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Header con gradiente - se extiende hasta arriba -->
+            <!-- Header con gradiente -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="220dp"
@@ -90,7 +90,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Gestión de Entregas"
+                    android:text="Mis Entregas"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="?android:attr/textColorPrimary"
@@ -110,20 +110,20 @@
                         android:padding="16dp">
 
                         <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_iniciar_delivery"
+                            android:id="@+id/btn_pedidos_asignados"
                             android:layout_width="match_parent"
                             android:layout_height="64dp"
-                            android:text="🚚 Iniciar Entrega"
+                            android:text="📦 Pedidos Asignados"
                             android:textSize="16sp"
                             app:cornerRadius="12dp"
                             app:backgroundTint="@color/dolores" />
 
                         <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_mis_entregas"
+                            android:id="@+id/btn_entrega_activa"
                             android:layout_width="match_parent"
                             android:layout_height="56dp"
                             android:layout_marginTop="8dp"
-                            android:text="📦 Mis Entregas Pendientes"
+                            android:text="🚚 Entrega en Curso"
                             app:cornerRadius="12dp"
                             style="@style/Widget.Material3.Button.TonalButton" />
 
@@ -135,10 +135,19 @@
                             android:text="📊 Historial de Entregas"
                             app:cornerRadius="12dp"
                             style="@style/Widget.Material3.Button.TonalButton" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_notificaciones"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:layout_marginTop="8dp"
+                            android:text="🔔 Notificaciones"
+                            app:cornerRadius="12dp"
+                            style="@style/Widget.Material3.Button.TonalButton" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Card de instrucciones -->
+                <!-- Card informativo -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -156,7 +165,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="ℹ️ Instrucciones"
+                            android:text="ℹ️ Cómo funciona"
                             android:textSize="16sp"
                             android:textStyle="bold"
                             android:textColor="@color/dolores" />
@@ -165,7 +174,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="1. Presiona 'Iniciar Entrega'\n2. Permite acceso a ubicación\n3. Tu ubicación se enviará en tiempo real\n4. El cliente podrá ver tu ruta"
+                            android:text="1. Los pedidos se asignan automáticamente\n2. Ve a 'Pedidos Asignados' para ver tus entregas\n3. Selecciona un pedido para iniciar la entrega\n4. Tu ubicación se compartirá con el cliente"
                             android:textSize="14sp"
                             android:textColor="?android:attr/textColorSecondary"
                             android:lineSpacingExtra="4dp" />

@@ -68,6 +68,38 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
+            <!-- Botones para seleccionar dirección -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSeleccionarDireccion"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:text="📍 Mis Direcciones"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    app:cornerRadius="8dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnUsarUbicacion"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:text="📌 Mi Ubicación"
+                    android:textSize="12sp"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    app:cornerRadius="8dp" />
+
+            </LinearLayout>
+
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

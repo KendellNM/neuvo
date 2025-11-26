@@ -12,4 +12,9 @@ data class UsuarioResponse(
     // Campos alternativos por si el nombre mostrable viene separado
     @SerializedName("nombres") val nombres: String? = null,
     @SerializedName("apellidos") val apellidos: String? = null,
+    @SerializedName("telefono") val telefono: String? = null,
+    @SerializedName("dni") val dni: String? = null,
+    // IDs específicos por rol
+    @SerializedName("repartidorId") val repartidorId: Long? = null,
+    @SerializedName("clienteId") val clienteId: Long? = null,
 )

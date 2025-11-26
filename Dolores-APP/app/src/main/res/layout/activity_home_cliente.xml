@@ -145,24 +145,6 @@
                             style="@style/Widget.Material3.Button.TonalButton" />
 
                         <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_tracking"
-                            android:layout_width="match_parent"
-                            android:layout_height="56dp"
-                            android:layout_marginTop="8dp"
-                            android:text="🚚 Seguir mi Pedido"
-                            app:cornerRadius="12dp"
-                            style="@style/Widget.Material3.Button.TonalButton" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_notificaciones"
-                            android:layout_width="match_parent"
-                            android:layout_height="56dp"
-                            android:layout_marginTop="8dp"
-                            android:text="🔔 Notificaciones"
-                            app:cornerRadius="12dp"
-                            style="@style/Widget.Material3.Button.TonalButton" />
-
-                        <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_carrito"
                             android:layout_width="match_parent"
                             android:layout_height="56dp"
@@ -176,7 +158,16 @@
                             android:layout_width="match_parent"
                             android:layout_height="56dp"
                             android:layout_marginTop="8dp"
-                            android:text="📦 Mis Pedidos"
+                            android:text="📦 Mis Pedidos y Seguimiento"
+                            app:cornerRadius="12dp"
+                            style="@style/Widget.Material3.Button.TonalButton" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_notificaciones"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:layout_marginTop="8dp"
+                            android:text="🔔 Notificaciones"
                             app:cornerRadius="12dp"
                             style="@style/Widget.Material3.Button.TonalButton" />
                     </LinearLayout>

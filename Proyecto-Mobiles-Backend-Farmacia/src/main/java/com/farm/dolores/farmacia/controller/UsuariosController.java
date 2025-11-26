@@ -14,6 +14,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import com.farm.dolores.farmacia.repository.RepartidoresRepository;
+import com.farm.dolores.farmacia.repository.ClientesRepository;
+import com.farm.dolores.farmacia.entity.Repartidores;
+import com.farm.dolores.farmacia.entity.Clientes;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +35,12 @@ public class UsuariosController {
     
     @Autowired
     private UsuariosRepository usuariosRepository;
+    
+    @Autowired
+    private RepartidoresRepository repartidoresRepository;
+    
+    @Autowired
+    private ClientesRepository clientesRepository;
 
     @Operation(summary = "Obtener usuario actual", description = "Devuelve la información del usuario autenticado")
     @GetMapping("/me")
@@ -56,6 +66,26 @@ public class UsuariosController {
             response.put("usuario", user.getUsuario());
             response.put("correo", user.getCorreo());
             response.put("estado", user.getEstado());
+            
+            // Buscar si el usuario es repartidor
+            Optional<Repartidores> repartidorOpt = repartidoresRepository.findByRepartidores(user);
+            if (repartidorOpt.isPresent()) {
+                Repartidores repartidor = repartidorOpt.get();
+                response.put("repartidorId", repartidor.getIdRepartidores());
+                response.put("nombres", repartidor.getNombres());
+                response.put("apellidos", repartidor.getApellidos());
+            }
+            
+            // Buscar si el usuario es cliente
+            Optional<Clientes> clienteOpt = clientesRepository.findByClientes(user);
+            if (clienteOpt.isPresent()) {
+                Clientes cliente = clienteOpt.get();
+                response.put("clienteId", cliente.getIdClientes());
+                response.put("nombres", cliente.getNombres());
+                response.put("apellidos", cliente.getApellidos());
+                response.put("telefono", cliente.getTelefono());
+                response.put("dni", cliente.getDni());
+            }
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {

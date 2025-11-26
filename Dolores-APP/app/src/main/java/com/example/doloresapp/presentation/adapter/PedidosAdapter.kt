@@ -34,26 +34,35 @@ class PedidosAdapter(
         private val tvTotal: TextView = itemView.findViewById(R.id.tvTotal)
         private val tvFecha: TextView = itemView.findViewById(R.id.tvFecha)
         private val tvDireccion: TextView = itemView.findViewById(R.id.tvDireccion)
+        private val btnTracking: android.widget.Button = itemView.findViewById(R.id.btnTracking)
         
         fun bind(pedido: PedidoDTO) {
             tvNumero.text = "Pedido #${pedido.id}"
-            tvTotal.text = "S/ %.2f".format(pedido.total)
+            tvTotal.text = "S/ %.2f".format(pedido.total ?: 0.0)
             tvFecha.text = pedido.fechaCreacion ?: ""
             tvDireccion.text = pedido.direccionEntrega ?: "Sin dirección"
             
             // Estado con emoji
-            val (emoji, color) = when (pedido.estado) {
+            val estado = pedido.estado ?: "PENDIENTE"
+            val (emoji, color) = when (estado.uppercase()) {
                 "PENDIENTE" -> "⏳" to android.R.color.holo_orange_dark
+                "CONFIRMADO" -> "✓" to android.R.color.holo_blue_dark
                 "PREPARANDO" -> "👨‍🍳" to android.R.color.holo_blue_dark
                 "LISTO" -> "✅" to android.R.color.holo_green_dark
+                "ASIGNADO" -> "🚚" to android.R.color.holo_orange_light
                 "EN_CAMINO" -> "🚚" to android.R.color.holo_blue_light
                 "ENTREGADO" -> "📦" to android.R.color.holo_green_light
                 "CANCELADO" -> "❌" to android.R.color.holo_red_dark
                 else -> "📋" to android.R.color.darker_gray
             }
-            tvEstado.text = "$emoji ${pedido.estado}"
+            tvEstado.text = "$emoji $estado"
             tvEstado.setTextColor(itemView.context.getColor(color))
             
+            // Mostrar botón de tracking si el pedido está en camino o asignado
+            val mostrarTracking = estado.uppercase() in listOf("EN_CAMINO", "ASIGNADO")
+            btnTracking.visibility = if (mostrarTracking) View.VISIBLE else View.GONE
+            
+            btnTracking.setOnClickListener { onPedidoClick(pedido) }
             itemView.setOnClickListener { onPedidoClick(pedido) }
         }
     }

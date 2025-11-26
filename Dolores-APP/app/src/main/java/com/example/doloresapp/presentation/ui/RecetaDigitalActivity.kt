@@ -50,20 +50,33 @@ class RecetaDigitalActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_receta_digital)
         
-        // Obtener clienteId de SharedPreferences
-        val prefs = getSharedPreferences(ApiConstants.Prefs.NAME, MODE_PRIVATE)
-        clienteId = prefs.getLong(ApiConstants.Prefs.USER_ID, 0)
-        
-        if (clienteId == 0L) {
-            Toast.makeText(this, "Error: Usuario no identificado", Toast.LENGTH_SHORT).show()
-            finish()
-            return
-        }
-        
         initViews()
         initViewModel()
         setupListeners()
         observeViewModel()
+        
+        // Obtener clienteId del usuario actual
+        loadClienteId()
+    }
+    
+    private fun loadClienteId() {
+        androidx.lifecycle.lifecycleScope.launchWhenCreated {
+            try {
+                val userApi = com.example.doloresapp.data.remote.NetworkClient.createService(
+                    com.example.doloresapp.data.remote.UserApi::class.java
+                )
+                val currentUser = userApi.getCurrentUser()
+                clienteId = currentUser.clienteId ?: currentUser.id ?: 0L
+                
+                if (clienteId == 0L) {
+                    Toast.makeText(this@RecetaDigitalActivity, "Error: Usuario no identificado", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@RecetaDigitalActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
     }
     
     private fun initViews() {

@@ -133,6 +133,17 @@ class LoginActivity : AppCompatActivity() {
                         .putBoolean(ApiConstants.Prefs.IS_LOGGED_IN, true)
                         .apply()
                     
+                    // Obtener y guardar IDs específicos del usuario (clienteId, repartidorId)
+                    try {
+                        val userApi = NetworkClient.createService(com.example.doloresapp.data.remote.UserApi::class.java)
+                        val currentUser = userApi.getCurrentUser()
+                        prefs.edit()
+                            .putLong(ApiConstants.Prefs.USER_ID, currentUser.id ?: 0L)
+                            .apply()
+                    } catch (e: Exception) {
+                        // Silenciar error, se obtendrá después
+                    }
+                    
                     Toast.makeText(this@LoginActivity, "Login exitoso como ${userRole.name}", Toast.LENGTH_SHORT).show()
                     
                     // Redirigir a HomeActivity (maneja roles automáticamente)

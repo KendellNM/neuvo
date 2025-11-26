@@ -34,20 +34,37 @@ class FidelizacionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_fidelizacion)
         
-        val prefs = getSharedPreferences(ApiConstants.Prefs.NAME, MODE_PRIVATE)
-        clienteId = prefs.getLong(ApiConstants.Prefs.USER_ID, 0)
-        
-        if (clienteId == 0L) {
-            Toast.makeText(this, "Error: Usuario no identificado", Toast.LENGTH_SHORT).show()
-            finish()
-            return
-        }
-        
         initViews()
         apiService = ServiceLocator.provideFidelizacionApiService()
         
-        loadPuntos()
-        loadHistorial()
+        // Obtener clienteId del usuario actual
+        loadClienteIdAndData()
+    }
+    
+    private fun loadClienteIdAndData() {
+        lifecycleScope.launch {
+            try {
+                progressBar.visibility = View.VISIBLE
+                val userApi = com.example.doloresapp.data.remote.NetworkClient.createService(
+                    com.example.doloresapp.data.remote.UserApi::class.java
+                )
+                val currentUser = userApi.getCurrentUser()
+                clienteId = currentUser.clienteId ?: 0L
+                
+                if (clienteId == 0L) {
+                    Toast.makeText(this@FidelizacionActivity, "Error: Usuario no identificado como cliente", Toast.LENGTH_SHORT).show()
+                    finish()
+                    return@launch
+                }
+                
+                loadPuntos()
+                loadHistorial()
+            } catch (e: Exception) {
+                progressBar.visibility = View.GONE
+                Toast.makeText(this@FidelizacionActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
     }
     
     private fun initViews() {
@@ -161,15 +178,12 @@ class FidelizacionActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 progressBar.visibility = View.VISIBLE
-                val request = mapOf(
-                    "clienteId" to clienteId,
-                    "puntosACanjear" to puntos,
-                    "descripcionCupon" to "Descuento ${puntos / 10}%"
-                )
                 
                 val response = apiService.canjearPuntos(
                     com.example.doloresapp.data.remote.dto.CanjearPuntosRequest(
-                        clienteId, puntos, "Descuento ${puntos / 10}%"
+                        clienteId = clienteId, 
+                        puntos = puntos, 
+                        codigoCupon = "DESCUENTO_${puntos / 10}"
                     )
                 )
                 

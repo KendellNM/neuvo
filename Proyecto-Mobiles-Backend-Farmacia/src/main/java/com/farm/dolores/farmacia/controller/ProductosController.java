@@ -171,6 +171,27 @@ public class ProductosController {
         }
     }
 
+    @GetMapping("/codigo/{codigoBarras}")
+    @Operation(
+        summary = "Buscar producto por código de barras",
+        description = "Endpoint para escaneo QR/código de barras. Retorna el producto completo"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Producto encontrado"),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+    })
+    public ResponseEntity<Productos> getByCodigoBarras(@PathVariable("codigoBarras") String codigoBarras) {
+        try {
+            Optional<Productos> opt = productosService.findByCodigoBarras(codigoBarras);
+            if (opt.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(opt.get(), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Productos> delete(@PathVariable("id") Long id) {
         try {

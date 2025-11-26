@@ -42,9 +42,15 @@ class MisPedidosActivity : AppCompatActivity() {
         // Adapter
         adapter = PedidosAdapter { pedido ->
             // Click en pedido - ver detalle o tracking
-            if (pedido.estado == "EN_CAMINO") {
+            val estado = pedido.estado?.uppercase() ?: ""
+            if (estado == "EN_CAMINO" || estado == "ASIGNADO") {
                 val intent = android.content.Intent(this, DeliveryTrackingActivity::class.java)
                 intent.putExtra("pedido_id", pedido.id)
+                // Pasar coordenadas de destino si están disponibles
+                pedido.direccionInfo?.let { dir ->
+                    dir.getLatitudDouble()?.let { intent.putExtra("destino_lat", it) }
+                    dir.getLongitudDouble()?.let { intent.putExtra("destino_lng", it) }
+                }
                 startActivity(intent)
             } else {
                 Toast.makeText(this, "Pedido #${pedido.id} - ${pedido.estado}", Toast.LENGTH_SHORT).show()
@@ -61,11 +67,19 @@ class MisPedidosActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
-                val prefs = getSharedPreferences(ApiConstants.Prefs.NAME, MODE_PRIVATE)
-                val userId = prefs.getLong(ApiConstants.Prefs.USER_ID, 1L)
+                // Obtener el clienteId del usuario actual
+                val userApi = NetworkClient.createService(com.example.doloresapp.data.remote.UserApi::class.java)
+                val currentUser = userApi.getCurrentUser()
+                val clienteId = currentUser.clienteId
+                
+                if (clienteId == null) {
+                    progressBar.visibility = View.GONE
+                    Toast.makeText(this@MisPedidosActivity, "No se encontró información del cliente", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
                 
                 val api = NetworkClient.createService(PedidoApiService::class.java)
-                val pedidos = api.getPedidosByCliente(userId)
+                val pedidos = api.getPedidosByCliente(clienteId)
                 
                 progressBar.visibility = View.GONE
                 

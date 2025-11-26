@@ -2,29 +2,35 @@ package com.example.doloresapp.presentation.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.doloresapp.R
 import com.example.doloresapp.data.local.database.AppDatabase
 import com.example.doloresapp.data.local.entity.UbicacionDeliveryEntity
 import com.example.doloresapp.data.remote.websocket.DeliveryWebSocketClient
 import com.example.doloresapp.utils.Constants
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import com.example.doloresapp.utils.DirectionsHelper
 import kotlinx.coroutines.launch
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
 import java.util.Date
 
-class DeliveryTrackingActivity : AppCompatActivity(), OnMapReadyCallback {
+/**
+ * Activity para tracking de delivery usando OSMDroid (OpenStreetMap)
+ * 100% GRATIS - SIN API KEY
+ */
+class DeliveryTrackingActivity : AppCompatActivity() {
     
-    private lateinit var googleMap: GoogleMap
+    private lateinit var mapView: MapView
     private lateinit var webSocketClient: DeliveryWebSocketClient
     private lateinit var database: AppDatabase
     private lateinit var estadoTextView: TextView
@@ -32,11 +38,11 @@ class DeliveryTrackingActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var tvTiempo: TextView
     
     private var pedidoId: Long = 0
-    private var currentMarker: com.google.android.gms.maps.model.Marker? = null
-    private var destinoMarker: com.google.android.gms.maps.model.Marker? = null
+    private var repartidorMarker: Marker? = null
+    private var destinoMarker: Marker? = null
     
     // Coordenadas de destino (dirección del cliente)
-    private var destinoLatLng: LatLng? = null
+    private var destinoGeoPoint: GeoPoint? = null
     
     companion object {
         private const val LOCATION_PERMISSION_CODE = 101
@@ -44,6 +50,10 @@ class DeliveryTrackingActivity : AppCompatActivity(), OnMapReadyCallback {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Configurar OSMDroid
+        Configuration.getInstance().load(this, getSharedPreferences("osmdroid", MODE_PRIVATE))
+        Configuration.getInstance().userAgentValue = packageName
         
         // Verificar que el usuario sea cliente
         if (!com.example.doloresapp.utils.RoleManager.isCliente(this)) {
@@ -59,7 +69,7 @@ class DeliveryTrackingActivity : AppCompatActivity(), OnMapReadyCallback {
         // Obtener coordenadas de destino (dirección del cliente)
         val destinoLat = intent.getDoubleExtra("destino_lat", -12.0464)
         val destinoLng = intent.getDoubleExtra("destino_lng", -77.0428)
-        destinoLatLng = LatLng(destinoLat, destinoLng)
+        destinoGeoPoint = GeoPoint(destinoLat, destinoLng)
         
         estadoTextView = findViewById(R.id.tv_estado)
         tvDistancia = findViewById(R.id.tv_distancia)
@@ -68,11 +78,40 @@ class DeliveryTrackingActivity : AppCompatActivity(), OnMapReadyCallback {
         database = AppDatabase.getDatabase(this)
         webSocketClient = DeliveryWebSocketClient(Constants.BASE_URL)
         
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
-        
+        setupMap()
         checkLocationPermission()
+    }
+    
+    private fun setupMap() {
+        mapView = findViewById(R.id.map_view)
+        mapView.setTileSource(TileSourceFactory.MAPNIK)
+        mapView.setMultiTouchControls(true)
+        
+        // Configurar zoom
+        mapView.controller.setZoom(15.0)
+        
+        // Marcar destino (dirección del cliente)
+        destinoGeoPoint?.let { destino ->
+            destinoMarker = Marker(mapView).apply {
+                position = destino
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                title = "📍 Destino de Entrega"
+                icon = ContextCompat.getDrawable(this@DeliveryTrackingActivity, R.drawable.ic_destination_marker)
+                    ?: getDefaultMarkerDrawable()
+            }
+            mapView.overlays.add(destinoMarker)
+            mapView.controller.setCenter(destino)
+        }
+        
+        // Cargar última ubicación guardada
+        loadLastLocation()
+        
+        // Conectar WebSocket
+        connectWebSocket()
+    }
+    
+    private fun getDefaultMarkerDrawable(): Drawable {
+        return ContextCompat.getDrawable(this, android.R.drawable.ic_menu_mylocation)!!
     }
     
     private fun checkLocationPermission() {
@@ -89,35 +128,6 @@ class DeliveryTrackingActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
     
-    override fun onMapReady(map: GoogleMap) {
-        googleMap = map
-        
-        // Habilitar ubicación si hay permiso
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            googleMap.isMyLocationEnabled = true
-        }
-        
-        // Marcar destino (dirección del cliente)
-        destinoLatLng?.let { destino ->
-            destinoMarker = googleMap.addMarker(
-                MarkerOptions()
-                    .position(destino)
-                    .title("Destino de Entrega")
-            )
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(destino, 14f))
-        }
-        
-        // Cargar última ubicación guardada
-        loadLastLocation()
-        
-        // Conectar WebSocket
-        connectWebSocket()
-    }
-    
     private fun loadLastLocation() {
         lifecycleScope.launch {
             val ultimaUbicacion = database.ubicacionDeliveryDao().getUltimaUbicacion(pedidoId)
@@ -131,13 +141,13 @@ class DeliveryTrackingActivity : AppCompatActivity(), OnMapReadyCallback {
         webSocketClient.connect(
             onConnected = {
                 runOnUiThread {
-                    Toast.makeText(this, "Conectado al seguimiento", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "✅ Conectado al seguimiento", Toast.LENGTH_SHORT).show()
                 }
                 subscribeToDelivery()
             },
             onError = { error ->
                 runOnUiThread {
-                    Toast.makeText(this, "Error de conexión: ${error.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "❌ Error de conexión: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         )
@@ -168,23 +178,28 @@ class DeliveryTrackingActivity : AppCompatActivity(), OnMapReadyCallback {
     }
     
     private fun updateMapLocation(latitud: Double, longitud: Double) {
-        val location = LatLng(latitud, longitud)
+        val location = GeoPoint(latitud, longitud)
         
         // Actualizar marcador del repartidor
-        currentMarker?.remove()
-        currentMarker = googleMap.addMarker(
-            MarkerOptions()
-                .position(location)
-                .title("🚚 Repartidor")
-        )
+        repartidorMarker?.let { mapView.overlays.remove(it) }
         
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
+        repartidorMarker = Marker(mapView).apply {
+            position = location
+            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+            title = "🚚 Repartidor"
+            icon = ContextCompat.getDrawable(this@DeliveryTrackingActivity, R.drawable.ic_delivery_marker)
+                ?: getDefaultMarkerDrawable()
+        }
+        mapView.overlays.add(repartidorMarker)
+        
+        mapView.controller.animateTo(location)
+        mapView.invalidate()
         
         // Dibujar ruta desde repartidor hasta destino
-        destinoLatLng?.let { destino ->
+        destinoGeoPoint?.let { destino ->
             lifecycleScope.launch {
-                val routeInfo = com.example.doloresapp.utils.DirectionsHelper.drawRoute(
-                    googleMap,
+                val routeInfo = DirectionsHelper.drawRoute(
+                    mapView,
                     location,
                     destino
                 )
@@ -197,6 +212,16 @@ class DeliveryTrackingActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         }
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        mapView.onResume()
+    }
+    
+    override fun onPause() {
+        super.onPause()
+        mapView.onPause()
     }
     
     override fun onDestroy() {

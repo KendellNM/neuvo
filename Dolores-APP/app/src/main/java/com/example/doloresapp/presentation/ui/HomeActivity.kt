@@ -107,27 +107,19 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, FidelizacionActivity::class.java))
         }
         
-        findViewById<Button>(R.id.btn_tracking).setOnClickListener {
-            // Abrir tracking como CLIENTE
-            val intent = Intent(this, DeliveryTrackingActivity::class.java)
-            intent.putExtra("pedido_id", 123L) // Obtener de pedido real
-            intent.putExtra("destino_lat", -12.0464)
-            intent.putExtra("destino_lng", -77.0428)
-            startActivity(intent)
-        }
-        
-        findViewById<Button>(R.id.btn_notificaciones).setOnClickListener {
-            startActivity(Intent(this, NotificacionesActivity::class.java))
-        }
-        
         // Carrito
         findViewById<Button>(R.id.btn_carrito)?.setOnClickListener {
             startActivity(Intent(this, CarritoActivity::class.java))
         }
         
-        // Mis Pedidos
+        // Mis Pedidos y Seguimiento
         findViewById<Button>(R.id.btn_mis_pedidos)?.setOnClickListener {
             startActivity(Intent(this, MisPedidosActivity::class.java))
+        }
+        
+        // Notificaciones
+        findViewById<Button>(R.id.btn_notificaciones).setOnClickListener {
+            startActivity(Intent(this, NotificacionesActivity::class.java))
         }
     }
     
@@ -148,24 +140,28 @@ class HomeActivity : AppCompatActivity() {
         // Botón logout
         findViewById<View>(R.id.btn_logout)?.setOnClickListener { showLogoutDialog() }
         
-        // Iniciar entrega - Abre el modo repartidor con GPS en tiempo real
-        findViewById<Button>(R.id.btn_iniciar_delivery).setOnClickListener {
-            val intent = Intent(this, RepartidorActivity::class.java)
-            // En producción, estos datos vendrían del pedido asignado
-            intent.putExtra("pedido_id", 123L)
-            intent.putExtra("destino_lat", -12.0464) // Lima, Perú
-            intent.putExtra("destino_lng", -77.0428)
+        // Pedidos asignados - Ver lista de pedidos asignados al repartidor
+        findViewById<Button>(R.id.btn_pedidos_asignados)?.setOnClickListener {
+            startActivity(Intent(this, PedidosAsignadosActivity::class.java))
+        }
+        
+        // Entrega activa - Ver pedidos en camino
+        findViewById<Button>(R.id.btn_entrega_activa)?.setOnClickListener {
+            val intent = Intent(this, PedidosAsignadosActivity::class.java)
+            intent.putExtra("tab_inicial", 1) // Tab "En Camino"
             startActivity(intent)
         }
         
-        // Mis entregas pendientes
-        findViewById<Button>(R.id.btn_mis_entregas).setOnClickListener {
-            android.widget.Toast.makeText(this, "Próximamente: Lista de entregas pendientes", android.widget.Toast.LENGTH_SHORT).show()
+        // Historial de entregas
+        findViewById<Button>(R.id.btn_historial)?.setOnClickListener {
+            val intent = Intent(this, PedidosAsignadosActivity::class.java)
+            intent.putExtra("tab_inicial", 2) // Tab "Entregados"
+            startActivity(intent)
         }
         
-        // Historial de entregas
-        findViewById<Button>(R.id.btn_historial).setOnClickListener {
-            android.widget.Toast.makeText(this, "Próximamente: Historial de entregas", android.widget.Toast.LENGTH_SHORT).show()
+        // Notificaciones
+        findViewById<Button>(R.id.btn_notificaciones)?.setOnClickListener {
+            startActivity(Intent(this, NotificacionesActivity::class.java))
         }
     }
     
@@ -191,9 +187,9 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, ProductosActivity::class.java))
         }
         
-        // Ver pedidos (TODO)
+        // Ver pedidos
         findViewById<Button>(R.id.btn_pedidos).setOnClickListener {
-            android.widget.Toast.makeText(this, "Próximamente: Gestión de pedidos", android.widget.Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, GestionPedidosActivity::class.java))
         }
         
         // Gestionar usuarios (TODO)

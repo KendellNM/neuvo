@@ -60,12 +60,18 @@ public class Pedidos {
     @ManyToOne
     @JoinColumn(name = "clientes_id")
     private Clientes clientes;
+    
     @ManyToOne
     @JoinColumn(name = "direcciones_id")
     private Direcciones direcciones;
+    
     @ManyToOne
     @JoinColumn(name = "recetas_id")
     private Recetas recetas;
+    
+    @ManyToOne
+    @JoinColumn(name = "repartidor_id")
+    private Repartidores repartidor;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "pedidos")
     @JsonIgnore
     private Set<Entregas> entregass = new HashSet<>();

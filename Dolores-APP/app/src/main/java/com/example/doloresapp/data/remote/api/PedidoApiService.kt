@@ -12,12 +12,12 @@ interface PedidoApiService {
     @GET("api/pedidos/{id}")
     suspend fun getPedidoById(@Path("id") id: Long): PedidoDTO
     
-    @POST("api/pedidos")
+    @POST("api/pedidos/mobile")
     suspend fun crearPedido(@Body request: CrearPedidoRequest): PedidoDTO
     
     @PUT("api/pedidos/{id}/estado")
     suspend fun actualizarEstado(
         @Path("id") id: Long,
-        @Query("estado") estado: String
+        @Query("nuevoEstado") estado: String
     ): PedidoDTO
 }

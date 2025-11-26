@@ -6,6 +6,9 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface QRApiService {
-    @GET("api/productos/{id}/mobile")
+    @GET("api/productos/{id}")
     suspend fun getProductoByQR(@Path("id") productoId: Long): Response<Producto>
+    
+    @GET("api/productos/codigo/{codigoBarras}")
+    suspend fun getProductoByCodigoBarras(@Path("codigoBarras") codigoBarras: String): Response<Producto>
 }

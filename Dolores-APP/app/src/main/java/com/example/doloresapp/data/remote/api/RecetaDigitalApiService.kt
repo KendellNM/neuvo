@@ -24,6 +24,6 @@ interface RecetaDigitalApiService {
     @PUT("api/recetas-digitales/{id}/validar")
     suspend fun validarReceta(
         @Path("id") recetaId: Long,
-        @Body validacion: Map<String, Boolean>
+        @Body productosIds: List<Long>
     ): Response<ApiResponse<RecetaDigital>>
 }

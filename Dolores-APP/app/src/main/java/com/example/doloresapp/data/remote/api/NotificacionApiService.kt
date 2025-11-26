@@ -7,12 +7,12 @@ import retrofit2.Response
 import retrofit2.http.*
 
 interface NotificacionApiService {
-    @POST("api/notificaciones/registrar-dispositivo")
+    @POST("api/notificaciones-push/registrar-dispositivo")
     suspend fun registrarDispositivo(@Body request: RegistrarDispositivoRequest): Response<ApiResponse<Any>>
     
-    @GET("api/notificaciones/cliente/{clienteId}")
+    @GET("api/notificaciones-push/cliente/{clienteId}")
     suspend fun getNotificaciones(@Path("clienteId") clienteId: Long): Response<List<Notificacion>>
     
-    @PUT("api/notificaciones/{id}/marcar-leida")
+    @PUT("api/notificaciones-push/{id}/marcar-leida")
     suspend fun marcarComoLeida(@Path("id") notificacionId: Long): Response<ApiResponse<Any>>
 }

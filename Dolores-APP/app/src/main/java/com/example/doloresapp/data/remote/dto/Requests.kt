@@ -2,8 +2,8 @@ package com.example.doloresapp.data.remote.dto
 
 data class CanjearPuntosRequest(
     val clienteId: Long,
-    val puntosACanjear: Int,
-    val descripcionCupon: String
+    val puntos: Int,
+    val codigoCupon: String
 )
 
 data class RegistrarDispositivoRequest(

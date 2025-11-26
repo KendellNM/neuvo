@@ -86,7 +86,8 @@ class SplashActivity : AppCompatActivity() {
             if (token.isNullOrBlank()) {
                 startActivity(Intent(this, LoginActivity::class.java))
             } else {
-                startActivity(Intent(this, MainActivity::class.java))
+                // Ir directo a HomeActivity (maneja roles)
+                startActivity(Intent(this, com.example.doloresapp.presentation.ui.HomeActivity::class.java))
             }
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             finish()

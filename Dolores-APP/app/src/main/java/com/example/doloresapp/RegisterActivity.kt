@@ -190,8 +190,20 @@ class RegisterActivity : AppCompatActivity() {
                     )
                     val resp: AuthResponse = api.register(req)
                     TokenStore.saveToken(resp.token)
+                    
+                    // Guardar rol (por defecto CLIENTE al registrarse)
+                    val userRole = com.example.doloresapp.utils.RoleManager.parseRoleFromBackend(resp.roles)
+                    com.example.doloresapp.utils.RoleManager.saveUserRole(this@RegisterActivity, userRole)
+                    
+                    // Guardar email
+                    val prefs = getSharedPreferences(com.example.doloresapp.utils.ApiConstants.Prefs.NAME, MODE_PRIVATE)
+                    prefs.edit()
+                        .putString(com.example.doloresapp.utils.ApiConstants.Prefs.USER_EMAIL, email)
+                        .putBoolean(com.example.doloresapp.utils.ApiConstants.Prefs.IS_LOGGED_IN, true)
+                        .apply()
+                    
                     Toast.makeText(this@RegisterActivity, "Registro exitoso", Toast.LENGTH_SHORT).show()
-                    startActivity(Intent(this@RegisterActivity, MainActivity::class.java))
+                    startActivity(Intent(this@RegisterActivity, com.example.doloresapp.presentation.ui.HomeActivity::class.java))
                     finish()
                 } catch (e: Exception) {
                     Toast.makeText(this@RegisterActivity, e.message ?: "Error de registro", Toast.LENGTH_LONG).show()

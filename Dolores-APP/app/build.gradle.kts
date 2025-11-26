@@ -67,8 +67,10 @@ dependencies {
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation("com.google.zxing:core:3.5.2")
     
-    // Google Maps & Location
-    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    // OSMDroid - OpenStreetMap (100% GRATIS, SIN API KEY)
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+    
+    // Location Services (solo para GPS, no requiere API Key)
     implementation("com.google.android.gms:play-services-location:21.0.1")
     
     // WebSocket (STOMP)

@@ -78,4 +78,19 @@ public class DireccionesController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @GetMapping("/cliente/{clienteId}")
+    public ResponseEntity<List<Direcciones>> getByCliente(@PathVariable("clienteId") Long clienteId) {
+        try {
+            List<Direcciones> direcciones = direccionesService.readAll().stream()
+                .filter(d -> d.getClientes() != null && d.getClientes().getIdClientes().equals(clienteId))
+                .toList();
+            
+            if (direcciones.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(direcciones, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
