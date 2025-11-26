@@ -123,7 +123,7 @@ class LoginActivity : AppCompatActivity() {
                     TokenStore.saveToken(resp.token)
                     
                     // NUEVO: Guardar rol del usuario
-                    val userRole = RoleManager.parseRoleFromBackend(resp.roles)
+                    val userRole = RoleManager.parseRoleFromBackend(resp.roles ?: emptyList())
                     RoleManager.saveUserRole(this@LoginActivity, userRole)
                     
                     // Guardar información del usuario

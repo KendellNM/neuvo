@@ -13,5 +13,5 @@ data class AuthResponse(
     val dni: String? = null,
     val telefono: String? = null,
     val token: String,
-    val roles: List<String> = emptyList()
+    val roles: List<String>? = null
 )

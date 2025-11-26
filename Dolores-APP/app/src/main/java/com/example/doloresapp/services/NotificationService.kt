@@ -120,7 +120,11 @@ class NotificationService : Service() {
                 
                 // Mostrar notificaciones
                 nuevas.forEach { notificacion ->
-                    showNotification(notificacion.id, notificacion.titulo, notificacion.mensaje)
+                    showNotification(
+                        notificacion.id, 
+                        notificacion.titulo ?: "Notificación", 
+                        notificacion.mensaje ?: ""
+                    )
                     saveNotificationToDatabase(notificacion)
                 }
                 
@@ -164,12 +168,12 @@ class NotificationService : Service() {
         try {
             val entity = NotificacionEntity(
                 id = notificacion.id,
-                titulo = notificacion.titulo,
-                mensaje = notificacion.mensaje,
-                tipo = notificacion.tipo,
+                titulo = notificacion.titulo ?: "Notificación",
+                mensaje = notificacion.mensaje ?: "",
+                tipo = notificacion.tipo ?: "INFO",
                 leida = notificacion.leida,
                 fecha = Date(),
-                datos = notificacion.datos?.toString()
+                datos = notificacion.datos
             )
             database.notificacionDao().insertNotificacion(entity)
         } catch (e: Exception) {

@@ -192,7 +192,7 @@ class RegisterActivity : AppCompatActivity() {
                     TokenStore.saveToken(resp.token)
                     
                     // Guardar rol (por defecto CLIENTE al registrarse)
-                    val userRole = com.example.doloresapp.utils.RoleManager.parseRoleFromBackend(resp.roles)
+                    val userRole = com.example.doloresapp.utils.RoleManager.parseRoleFromBackend(resp.roles ?: emptyList())
                     com.example.doloresapp.utils.RoleManager.saveUserRole(this@RegisterActivity, userRole)
                     
                     // Guardar email

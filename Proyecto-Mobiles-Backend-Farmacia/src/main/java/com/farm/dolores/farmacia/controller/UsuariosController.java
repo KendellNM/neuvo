@@ -68,7 +68,7 @@ public class UsuariosController {
             response.put("estado", user.getEstado());
             
             // Buscar si el usuario es repartidor
-            Optional<Repartidores> repartidorOpt = repartidoresRepository.findByRepartidores(user);
+            Optional<Repartidores> repartidorOpt = repartidoresRepository.findByUsuario(user);
             if (repartidorOpt.isPresent()) {
                 Repartidores repartidor = repartidorOpt.get();
                 response.put("repartidorId", repartidor.getIdRepartidores());
@@ -77,7 +77,7 @@ public class UsuariosController {
             }
             
             // Buscar si el usuario es cliente
-            Optional<Clientes> clienteOpt = clientesRepository.findByClientes(user);
+            Optional<Clientes> clienteOpt = clientesRepository.findByUsuario(user);
             if (clienteOpt.isPresent()) {
                 Clientes cliente = clienteOpt.get();
                 response.put("clienteId", cliente.getIdClientes());

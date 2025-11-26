@@ -17,7 +17,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.example.doloresapp.R
+import kotlinx.coroutines.launch
 import com.example.doloresapp.data.local.database.AppDatabase
 import com.example.doloresapp.data.repository.RecetaDigitalRepository
 import com.example.doloresapp.di.ServiceLocator
@@ -60,7 +62,7 @@ class RecetaDigitalActivity : AppCompatActivity() {
     }
     
     private fun loadClienteId() {
-        androidx.lifecycle.lifecycleScope.launchWhenCreated {
+        lifecycleScope.launch {
             try {
                 val userApi = com.example.doloresapp.data.remote.NetworkClient.createService(
                     com.example.doloresapp.data.remote.UserApi::class.java
