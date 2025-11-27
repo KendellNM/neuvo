@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  # Solo el servicio OCR con Tesseract
+  # Tu backend Java corre normal en tu PC
+  ocr-service:
+    build: ./ocr-service
+    container_name: ocr-tesseract
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+# Para iniciar solo el OCR:
+# docker-compose up -d ocr-service
+#
+# Tu backend Java en tu PC llama a:
+# http://localhost:5000/ocr

@@ -330,13 +330,31 @@ public class PedidosController {
     @PostMapping("/presencial")
     public ResponseEntity<?> crearPedidoPresencial(@RequestBody CrearPedidoPresencialRequest request) {
         try {
+            // Validar stock antes de procesar
+            if (request.getDetalles() != null) {
+                for (CrearPedidoPresencialRequest.DetallePedidoRequest detalleReq : request.getDetalles()) {
+                    Optional<Productos> productoOpt = productosRepository.findById(detalleReq.getProductoId());
+                    if (productoOpt.isEmpty()) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body("Producto no encontrado: ID " + detalleReq.getProductoId());
+                    }
+                    Productos producto = productoOpt.get();
+                    int stockActual = producto.getStock() != null ? producto.getStock() : 0;
+                    if (stockActual < detalleReq.getCantidad()) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Stock insuficiente para " + producto.getNombre() + 
+                                  ". Disponible: " + stockActual + ", Solicitado: " + detalleReq.getCantidad());
+                    }
+                }
+            }
+            
             // Crear pedido presencial
             Pedidos pedido = new Pedidos();
             pedido.setFechaPedido(new Date());
-            pedido.setEstado("COMPLETADO"); // Venta presencial se completa inmediatamente
+            pedido.setEstado("COMPLETADO");
             pedido.setMetodoPago("EFECTIVO");
             pedido.setObservaciones(request.getObservaciones() != null ? request.getObservaciones() : "Venta presencial");
-            pedido.setTipoVenta("PRESENCIAL"); // Marcar como venta presencial
+            pedido.setTipoVenta("PRESENCIAL");
             
             // Calcular totales
             double subtotal = 0.0;
@@ -347,7 +365,7 @@ public class PedidosController {
             }
             
             pedido.setSubtotal(subtotal);
-            pedido.setCostoDelivery(0.0); // Sin costo de delivery
+            pedido.setCostoDelivery(0.0);
             pedido.setDescuento(0.0);
             pedido.setTotal(subtotal);
             
