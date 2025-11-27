@@ -33,10 +33,11 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        // Asegurar que NetworkClient y CartRepository estén inicializados
+        // Asegurar que NetworkClient, CartRepository y ServiceLocator estén inicializados
         TokenStore.init(applicationContext)
         NetworkClient.init(applicationContext)
         com.example.doloresapp.data.cart.CartRepository.init(applicationContext)
+        com.example.doloresapp.di.ServiceLocator.init(applicationContext)
         
         val userRole = RoleManager.getUserRole(this)
         
@@ -182,18 +183,40 @@ class HomeActivity : AppCompatActivity() {
         recyclerEsenciales.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         recyclerEsenciales.adapter = adapterEsenciales
         
-        // Cargar productos desde API
+        // Cargar productos usando el repositorio offline (con cache SQLite)
         lifecycleScope.launch {
             try {
-                val api = NetworkClient.createService(com.example.doloresapp.data.remote.service.ProductoApiService::class.java)
-                val productos = api.getAllProductos()
+                val offlineRepo = com.example.doloresapp.di.ServiceLocator.getOfflineRepository(this@HomeActivity)
+                val productosDomain = offlineRepo.getProductos()
                 
-                // Primeros 5 para destacados
-                adapterDestacados.submitList(productos.take(5))
-                // Siguientes 5 para esenciales
-                adapterEsenciales.submitList(productos.drop(5).take(5))
+                // Convertir de domain a DTO para los adapters
+                val productos = productosDomain.map { p ->
+                    com.example.doloresapp.data.remote.dto.ProductoDTO(
+                        id = p.id,
+                        nombre = p.nombre,
+                        descripcion = p.descripcion,
+                        precio = p.precio,
+                        concentracion = p.concentracion,
+                        precioOferta = p.precioOferta,
+                        imagen_url = p.imagenUrl,
+                        stock = p.stock,
+                        stockMin = null,
+                        principioActivo = null,
+                        requerireReceta = false,
+                        codigoBarras = null,
+                        qrImageUrl = null,
+                        categoria = null
+                    )
+                }
+                
+                runOnUiThread {
+                    // Primeros 5 para destacados
+                    adapterDestacados.submitList(productos.take(5))
+                    // Siguientes 5 para esenciales
+                    adapterEsenciales.submitList(productos.drop(5).take(5))
+                }
             } catch (e: Exception) {
-                // Silenciar error
+                android.util.Log.e("HomeActivity", "Error cargando productos: ${e.message}")
             }
         }
     }

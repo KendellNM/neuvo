@@ -108,7 +108,12 @@ class ProductosActivity : AppCompatActivity() {
     private fun cargarCategorias() {
         lifecycleScope.launch {
             try {
-                categorias = categoriaApiService.getAllCategorias()
+                // Usar repositorio offline para categorías
+                val offlineRepo = com.example.doloresapp.di.ServiceLocator.getOfflineRepository(this@ProductosActivity)
+                val categoriasDomain = offlineRepo.getCategorias()
+                categorias = categoriasDomain.map { cat ->
+                    CategoriaDTO(id = cat.id, nombre = cat.nombre)
+                }
                 setupCategoriaSpinner()
             } catch (e: Exception) {
                 // Si falla, continuar sin filtro de categorías
@@ -143,7 +148,29 @@ class ProductosActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
         lifecycleScope.launch {
             try {
-                allProductos = apiService.getAllProductos()
+                // Usar repositorio offline para productos (con cache SQLite)
+                val offlineRepo = com.example.doloresapp.di.ServiceLocator.getOfflineRepository(this@ProductosActivity)
+                val productosDomain = offlineRepo.getProductos()
+                
+                // Convertir de domain a DTO
+                allProductos = productosDomain.map { p ->
+                    ProductoDTO(
+                        id = p.id,
+                        nombre = p.nombre,
+                        descripcion = p.descripcion,
+                        precio = p.precio,
+                        concentracion = p.concentracion,
+                        precioOferta = p.precioOferta,
+                        imagen_url = p.imagenUrl,
+                        stock = p.stock,
+                        stockMin = null,
+                        principioActivo = null,
+                        requerireReceta = false,
+                        codigoBarras = null,
+                        qrImageUrl = null,
+                        categoria = null
+                    )
+                }
                 adapter.submitList(allProductos)
                 progressBar.visibility = View.GONE
             } catch (e: Exception) {

@@ -82,10 +82,37 @@ class ProductoDetalleActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
-                val producto = apiService.getProductoById(productoId)
-                productoActual = producto
-                mostrarProducto(producto)
-                progressBar?.visibility = View.GONE
+                // Usar repositorio offline para obtener producto
+                val offlineRepo = com.example.doloresapp.di.ServiceLocator.getOfflineRepository(this@ProductoDetalleActivity)
+                val productoDomain = offlineRepo.getProductoById(productoId)
+                
+                if (productoDomain != null) {
+                    // Convertir de domain a DTO
+                    val producto = ProductoDTO(
+                        id = productoDomain.id,
+                        nombre = productoDomain.nombre,
+                        descripcion = productoDomain.descripcion,
+                        precio = productoDomain.precio,
+                        concentracion = productoDomain.concentracion,
+                        precioOferta = productoDomain.precioOferta,
+                        imagen_url = productoDomain.imagenUrl,
+                        stock = productoDomain.stock,
+                        stockMin = null,
+                        principioActivo = null,
+                        requerireReceta = false,
+                        codigoBarras = null,
+                        qrImageUrl = null,
+                        categoria = null
+                    )
+                    productoActual = producto
+                    mostrarProducto(producto)
+                    progressBar?.visibility = View.GONE
+                } else {
+                    progressBar?.visibility = View.GONE
+                    Toast.makeText(this@ProductoDetalleActivity, 
+                        "Producto no encontrado", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
             } catch (e: Exception) {
                 progressBar?.visibility = View.GONE
                 Toast.makeText(this@ProductoDetalleActivity, 
