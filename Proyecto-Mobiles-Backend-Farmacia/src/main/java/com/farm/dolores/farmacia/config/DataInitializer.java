@@ -425,8 +425,8 @@ public class DataInitializer implements CommandLineRunner {
             direccion.setProvincia("Lima");
             direccion.setDepartamento("Lima");
             direccion.setReferencia("Frente al parque Kennedy");
-            direccion.setLatitud(-12.1191);
-            direccion.setLongitud(-77.0311);
+            direccion.setLatitud("-12.1191");
+            direccion.setLongitud("-77.0311");
             direccion.setEstado("ACTIVO");
             direccion.setClientes(cliente);
             direccion = direccionesRepository.save(direccion);
