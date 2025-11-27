@@ -17,9 +17,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.doloresapp.R
 import com.example.doloresapp.data.remote.NetworkClient
 import com.example.doloresapp.data.remote.api.QRApiService
+import com.example.doloresapp.data.remote.api.PedidoApiService
 import com.example.doloresapp.data.remote.dto.CrearPedidoPresencialRequest
 import com.example.doloresapp.data.remote.dto.DetallePedidoRequest
-import com.example.doloresapp.data.remote.service.PedidoApiService
 import com.example.doloresapp.di.ServiceLocator
 import com.example.doloresapp.domain.model.ItemVenta
 import com.example.doloresapp.presentation.adapter.VentaProductoAdapter
