@@ -2,6 +2,9 @@ package com.farm.dolores.farmacia.config;
 
 import com.farm.dolores.farmacia.entity.Categoria;
 import com.farm.dolores.farmacia.entity.Clientes;
+import com.farm.dolores.farmacia.entity.Direcciones;
+import com.farm.dolores.farmacia.entity.PedidoDetalle;
+import com.farm.dolores.farmacia.entity.Pedidos;
 import com.farm.dolores.farmacia.entity.Productos;
 import com.farm.dolores.farmacia.entity.Repartidores;
 import com.farm.dolores.farmacia.entity.Roles;
@@ -9,6 +12,9 @@ import com.farm.dolores.farmacia.entity.UsuarioRol;
 import com.farm.dolores.farmacia.entity.Usuarios;
 import com.farm.dolores.farmacia.repository.CategoriaRepository;
 import com.farm.dolores.farmacia.repository.ClientesRepository;
+import com.farm.dolores.farmacia.repository.DireccionesRepository;
+import com.farm.dolores.farmacia.repository.PedidoDetalleRepository;
+import com.farm.dolores.farmacia.repository.PedidosRepository;
 import com.farm.dolores.farmacia.repository.ProductosRepository;
 import com.farm.dolores.farmacia.repository.RepartidoresRepository;
 import com.farm.dolores.farmacia.repository.RolesRepository;
@@ -40,6 +46,9 @@ public class DataInitializer implements CommandLineRunner {
     private final RepartidoresRepository repartidoresRepository;
     private final ClientesRepository clientesRepository;
     private final QRCodeService qrCodeService;
+    private final PedidosRepository pedidosRepository;
+    private final PedidoDetalleRepository pedidoDetalleRepository;
+    private final DireccionesRepository direccionesRepository;
 
     @Override
     @Transactional
@@ -49,6 +58,7 @@ public class DataInitializer implements CommandLineRunner {
         initializeTestUsers();
         initializeCategorias();
         initializeProductos();
+        initializePedidosPrueba();
     }
 
     private void initializeRoles() {
@@ -298,42 +308,54 @@ public class DataInitializer implements CommandLineRunner {
         cal.add(Calendar.YEAR, 2);
         Date fechaVenc = cal.getTime();
 
-        // Medicamentos
+        // Medicamentos - URLs de imágenes de medicamentos reales
         crearProducto("7501234567890", "Paracetamol 500mg", "Analgésico y antipirético", 
-            "Paracetamol", "500mg", false, 8.50, 50, medicamentos, fechaVenc);
+            "Paracetamol", "500mg", false, 8.50, 50, medicamentos, fechaVenc,
+            "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400");
         crearProducto("7501234567891", "Ibuprofeno 400mg", "Antiinflamatorio no esteroideo", 
-            "Ibuprofeno", "400mg", false, 12.00, 40, medicamentos, fechaVenc);
+            "Ibuprofeno", "400mg", false, 12.00, 40, medicamentos, fechaVenc,
+            "https://images.unsplash.com/photo-1550572017-edd951aa8f72?w=400");
         crearProducto("7501234567892", "Amoxicilina 500mg", "Antibiótico de amplio espectro", 
-            "Amoxicilina", "500mg", true, 25.00, 30, medicamentos, fechaVenc);
+            "Amoxicilina", "500mg", true, 25.00, 30, medicamentos, fechaVenc,
+            "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400");
         crearProducto("7501234567893", "Omeprazol 20mg", "Protector gástrico", 
-            "Omeprazol", "20mg", false, 15.00, 45, medicamentos, fechaVenc);
+            "Omeprazol", "20mg", false, 15.00, 45, medicamentos, fechaVenc,
+            "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400");
         crearProducto("7501234567894", "Loratadina 10mg", "Antihistamínico", 
-            "Loratadina", "10mg", false, 10.00, 60, medicamentos, fechaVenc);
+            "Loratadina", "10mg", false, 10.00, 60, medicamentos, fechaVenc,
+            "https://images.unsplash.com/photo-1585435557343-3b092031a831?w=400");
 
         // Vitaminas
         crearProducto("7502234567890", "Vitamina C 1000mg", "Suplemento vitamínico", 
-            "Ácido Ascórbico", "1000mg", false, 18.00, 80, vitaminas, fechaVenc);
+            "Ácido Ascórbico", "1000mg", false, 18.00, 80, vitaminas, fechaVenc,
+            "https://images.unsplash.com/photo-1616671276441-2f2c277b8bf6?w=400");
         crearProducto("7502234567891", "Vitamina D3 2000UI", "Suplemento de vitamina D", 
-            "Colecalciferol", "2000UI", false, 22.00, 55, vitaminas, fechaVenc);
+            "Colecalciferol", "2000UI", false, 22.00, 55, vitaminas, fechaVenc,
+            "https://images.unsplash.com/photo-1577401239170-897942555fb3?w=400");
         crearProducto("7502234567892", "Complejo B", "Vitaminas del complejo B", 
-            "Complejo B", "N/A", false, 20.00, 70, vitaminas, fechaVenc);
+            "Complejo B", "N/A", false, 20.00, 70, vitaminas, fechaVenc,
+            "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=400");
         crearProducto("7502234567893", "Omega 3", "Ácidos grasos esenciales", 
-            "EPA/DHA", "1000mg", false, 35.00, 40, vitaminas, fechaVenc);
+            "EPA/DHA", "1000mg", false, 35.00, 40, vitaminas, fechaVenc,
+            "https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?w=400");
 
         // Cuidado Personal
         crearProducto("7503234567890", "Alcohol en Gel 500ml", "Desinfectante de manos", 
-            "Alcohol", "70%", false, 12.00, 100, cuidado, fechaVenc);
+            "Alcohol", "70%", false, 12.00, 100, cuidado, fechaVenc,
+            "https://images.unsplash.com/photo-1584483766114-2cea6facdf57?w=400");
         crearProducto("7503234567891", "Protector Solar SPF50", "Protección solar alta", 
-            "Filtros UV", "SPF50", false, 45.00, 35, cuidado, fechaVenc);
+            "Filtros UV", "SPF50", false, 45.00, 35, cuidado, fechaVenc,
+            "https://images.unsplash.com/photo-1556227702-d1e4e7b5c232?w=400");
         crearProducto("7503234567892", "Crema Hidratante", "Hidratación facial", 
-            "Ácido Hialurónico", "N/A", false, 38.00, 25, cuidado, fechaVenc);
+            "Ácido Hialurónico", "N/A", false, 38.00, 25, cuidado, fechaVenc,
+            "https://images.unsplash.com/photo-1570194065650-d99fb4b38b15?w=400");
 
         log.info("✓ Productos de prueba creados exitosamente");
     }
 
     private void crearProducto(String codigo, String nombre, String descripcion,
             String principio, String concentracion, boolean receta, double precio,
-            int stock, Categoria categoria, Date fechaVenc) {
+            int stock, Categoria categoria, Date fechaVenc, String imagenUrl) {
         Productos p = new Productos();
         p.setCodigoBarras(codigo);
         p.setNombre(nombre);
@@ -348,6 +370,7 @@ public class DataInitializer implements CommandLineRunner {
         p.setFecha_vencimiento(fechaVenc);
         p.setFecha_registro(new Date());
         p.setEstado("activo");
+        p.setImagenUrl(imagenUrl);
         
         Productos saved = productosRepository.save(p);
         
@@ -361,6 +384,116 @@ public class DataInitializer implements CommandLineRunner {
             }
         } catch (Exception e) {
             log.warn("No se pudo generar QR para {}: {}", nombre, e.getMessage());
+        }
+    }
+
+    private void initializePedidosPrueba() {
+        if (pedidosRepository.count() > 0) {
+            log.info("Pedidos ya existen en la base de datos");
+            return;
+        }
+
+        log.info("Inicializando pedidos de prueba...");
+
+        try {
+            // Obtener cliente y repartidor de prueba
+            Optional<Usuarios> clienteUser = usuariosRepository.findByCorreo("cliente@dolores.com");
+            Optional<Usuarios> deliveryUser = usuariosRepository.findByCorreo("delivery@dolores.com");
+            
+            if (clienteUser.isEmpty()) {
+                log.warn("No se encontró usuario cliente para crear pedidos de prueba");
+                return;
+            }
+
+            Optional<Clientes> clienteOpt = clientesRepository.findByUsuario(clienteUser.get());
+            if (clienteOpt.isEmpty()) {
+                log.warn("No se encontró cliente para crear pedidos de prueba");
+                return;
+            }
+            Clientes cliente = clienteOpt.get();
+
+            Repartidores repartidor = null;
+            if (deliveryUser.isPresent()) {
+                Optional<Repartidores> repartidorOpt = repartidoresRepository.findByUsuario(deliveryUser.get());
+                repartidor = repartidorOpt.orElse(null);
+            }
+
+            // Crear dirección de prueba
+            Direcciones direccion = new Direcciones();
+            direccion.setDireccion("Av. Arequipa 1234");
+            direccion.setDistrito("Miraflores");
+            direccion.setProvincia("Lima");
+            direccion.setDepartamento("Lima");
+            direccion.setReferencia("Frente al parque Kennedy");
+            direccion.setLatitud(-12.1191);
+            direccion.setLongitud(-77.0311);
+            direccion.setEstado("ACTIVO");
+            direccion.setClientes(cliente);
+            direccion = direccionesRepository.save(direccion);
+
+            // Obtener productos
+            java.util.List<Productos> productos = productosRepository.findAll();
+            if (productos.isEmpty()) {
+                log.warn("No hay productos para crear pedidos de prueba");
+                return;
+            }
+
+            // Crear pedidos de prueba con diferentes estados
+            String[][] pedidosData = {
+                {"Paracetamol y Vitaminas", "PENDIENTE"},
+                {"Medicamentos varios", "EN_PREPARACION"},
+                {"Vitamina C y Omega 3", "LISTO"},
+                {"Ibuprofeno y Complejo B", "EN_CAMINO"},
+                {"Protector Solar", "ENTREGADO"}
+            };
+
+            for (int i = 0; i < pedidosData.length; i++) {
+                Pedidos pedido = new Pedidos();
+                pedido.setFechaPedido(new Date());
+                pedido.setEstado(pedidosData[i][1]);
+                pedido.setMetodoPago("EFECTIVO");
+                pedido.setClientes(cliente);
+                pedido.setDirecciones(direccion);
+                pedido.setObservaciones(pedidosData[i][0]);
+                
+                // Asignar repartidor a pedidos EN_CAMINO o ENTREGADO
+                if (repartidor != null && 
+                    (pedidosData[i][1].equals("EN_CAMINO") || pedidosData[i][1].equals("ENTREGADO"))) {
+                    pedido.setRepartidor(repartidor);
+                }
+
+                // Calcular total con productos aleatorios
+                double total = 0;
+                Pedidos savedPedido = pedidosRepository.save(pedido);
+                
+                // Agregar 1-3 productos al pedido
+                int numProductos = 1 + (i % 3);
+                for (int j = 0; j < numProductos && j < productos.size(); j++) {
+                    Productos prod = productos.get((i + j) % productos.size());
+                    int cantidad = 1 + (j % 2);
+                    
+                    PedidoDetalle detalle = new PedidoDetalle();
+                    detalle.setPedidos(savedPedido);
+                    detalle.setProductos(prod);
+                    detalle.setCantidad(cantidad);
+                    detalle.setPrecioUnitario(prod.getPrecio());
+                    detalle.setSubtotal(prod.getPrecio() * cantidad);
+                    pedidoDetalleRepository.save(detalle);
+                    
+                    total += prod.getPrecio() * cantidad;
+                }
+                
+                savedPedido.setTotal(total);
+                pedidosRepository.save(savedPedido);
+                
+                log.info("✓ Pedido creado: {} - {} (S/ {:.2f})", 
+                    pedidosData[i][0], pedidosData[i][1], total);
+            }
+
+            log.info("✓ Pedidos de prueba creados exitosamente");
+
+        } catch (Exception e) {
+            log.error("Error creando pedidos de prueba: {}", e.getMessage(), e);
         }
     }
 }
