@@ -66,13 +66,13 @@ public class Productos {
     @Column(name = "fecha_vencimiento")
     private Date fecha_vencimiento;
 
-    @Column(name = "imagenUrl")
+    @Column(name = "imagenUrl", length = 1000)
     private String imagenUrl;
 
-    @Column(name = "qrImageUrl")
+    @Column(name = "qrImageUrl", length = 500)
     private String qrImageUrl;
     
-    @Column(name = "barcodeImageUrl")
+    @Column(name = "barcodeImageUrl", length = 500)
     private String barcodeImageUrl;
 
     @Column(name = "indicaciones")

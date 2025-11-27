@@ -487,7 +487,7 @@ public class DataSeeder implements CommandLineRunner {
             if (estado.equals("ASIGNADO") || estado.equals("EN_CAMINO") || estado.equals("ENTREGADO")) {
                 if (!repartidores.isEmpty()) {
                     Repartidores repartidor = repartidores.get(random.nextInt(repartidores.size()));
-                    pedido.setRepartidores(repartidor);
+                    pedido.setRepartidor(repartidor);
                 }
             }
             
