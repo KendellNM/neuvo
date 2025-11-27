@@ -24,4 +24,14 @@ public class RecetaDigitalDto {
     private Long medicoId;
     private String medicoNombre;
     private List<RecetaDigitalDetalleDto> detalles;
+    
+    // Ubicación de entrega
+    private String direccionEntrega;
+    private Double latitud;
+    private Double longitud;
+    private String telefonoContacto;
+    private String observacionesCliente;
+    
+    // Pedido asociado (cuando el farmacéutico lo procesa)
+    private Long pedidoId;
 }

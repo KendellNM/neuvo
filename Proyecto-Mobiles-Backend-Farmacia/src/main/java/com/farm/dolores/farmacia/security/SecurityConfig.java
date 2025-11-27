@@ -44,7 +44,9 @@ public class SecurityConfig {
                                 "/topic/**",
                                 // catálogo público (opcional, ajusta según necesidad)
                                 "/api/productos/catalogo",
-                                "/api/productos/catalogo/search"
+                                "/api/productos/catalogo/search",
+                                // Archivos estáticos (QR, imágenes)
+                                "/uploads/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/categorias/**").permitAll()

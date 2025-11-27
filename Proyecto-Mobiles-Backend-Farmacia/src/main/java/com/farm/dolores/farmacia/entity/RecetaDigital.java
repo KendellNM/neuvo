@@ -39,6 +39,27 @@ public class RecetaDigital {
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechaProcesamiento;
 
+    // Ubicación de entrega del cliente
+    @Column(name = "direccionEntrega")
+    private String direccionEntrega;
+
+    @Column(name = "latitud")
+    private Double latitud;
+
+    @Column(name = "longitud")
+    private Double longitud;
+
+    @Column(name = "telefonoContacto")
+    private String telefonoContacto;
+
+    @Column(name = "observacionesCliente", columnDefinition = "TEXT")
+    private String observacionesCliente;
+
+    // Referencia al pedido creado por el farmacéutico
+    @OneToOne
+    @JoinColumn(name = "pedido_id")
+    private Pedidos pedido;
+
     @ManyToOne
     @JoinColumn(name = "cliente_id")
     private Clientes cliente;
