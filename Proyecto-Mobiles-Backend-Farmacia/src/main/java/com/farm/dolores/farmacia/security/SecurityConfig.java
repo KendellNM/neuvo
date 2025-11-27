@@ -60,6 +60,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/recetas/**").hasRole("MEDICO")
                         .requestMatchers(HttpMethod.POST, "/api/repartos/**").hasRole("REPARTIDOR")
                         .requestMatchers(HttpMethod.POST, "/api/pedidos/**").hasAnyRole("CLIENTE", "FARMACEUTICO", "MEDICO")
+                        
+                        // Recetas digitales (OCR) - Cliente y Admin pueden procesar
+                        .requestMatchers("/api/recetas-digitales/**").hasAnyRole("CLIENTE", "ADMIN", "FARMACEUTICO")
+                        
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

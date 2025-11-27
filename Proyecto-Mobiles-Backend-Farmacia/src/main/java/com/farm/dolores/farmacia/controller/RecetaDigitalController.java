@@ -32,7 +32,7 @@ public class RecetaDigitalController {
     private RecetaDigitalService recetaDigitalService;
 
     @PostMapping("/procesar")
-    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMIN', 'FARMACEUTICO')")
     @Operation(
         summary = "Procesar receta médica con OCR",
         description = "Sube una imagen de receta médica, extrae el texto con OCR y detecta medicamentos automáticamente"
