@@ -22,6 +22,7 @@ import com.example.doloresapp.data.remote.dto.CrearPedidoPresencialRequest
 import com.example.doloresapp.data.remote.dto.DetallePedidoRequest
 import com.example.doloresapp.di.ServiceLocator
 import com.example.doloresapp.domain.model.ItemVenta
+import com.example.doloresapp.domain.model.toDomain
 import com.example.doloresapp.presentation.adapter.VentaProductoAdapter
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
@@ -88,13 +89,9 @@ class VentaPresencialActivity : AppCompatActivity() {
 
 
     private fun setupRecyclerView() {
-        adapter = VentaProductoAdapter(
-            onCantidadChanged = { updateTotals() },
-            onItemRemoved = { item ->
-                itemsVenta.remove(item)
-                updateList()
-            }
-        )
+        adapter = VentaProductoAdapter(itemsVenta) {
+            updateUI()
+        }
         rvProductos.layoutManager = LinearLayoutManager(this)
         rvProductos.adapter = adapter
     }
@@ -118,7 +115,8 @@ class VentaPresencialActivity : AppCompatActivity() {
                 .setMessage("¿Estás seguro de eliminar todos los productos?")
                 .setPositiveButton("Sí") { _, _ ->
                     itemsVenta.clear()
-                    updateList()
+                    adapter.notifyDataSetChanged()
+                    updateUI()
                 }
                 .setNegativeButton("No", null)
                 .show()
@@ -194,7 +192,8 @@ class VentaPresencialActivity : AppCompatActivity() {
                 }
 
                 if (response != null && response.isSuccessful && response.body() != null) {
-                    val producto = response.body()!!
+                    val productoDTO = response.body()!!
+                    val producto = productoDTO.toDomain()
                     agregarProducto(producto)
                 } else {
                     Toast.makeText(this@VentaPresencialActivity,
@@ -210,28 +209,44 @@ class VentaPresencialActivity : AppCompatActivity() {
     }
 
     private fun agregarProducto(producto: com.example.doloresapp.domain.model.Producto) {
+        // Verificar stock disponible
+        if (producto.stock <= 0) {
+            Toast.makeText(this, "⚠️ ${producto.nombre} sin stock disponible", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
         // Verificar si ya existe
-        val existente = itemsVenta.find { it.productoId == producto.id }
-        if (existente != null) {
-            existente.cantidad++
-            Toast.makeText(this, "Cantidad actualizada: ${existente.cantidad}", Toast.LENGTH_SHORT).show()
+        val index = itemsVenta.indexOfFirst { it.productoId == producto.id }
+        if (index >= 0) {
+            val existente = itemsVenta[index]
+            // Validar que no exceda el stock
+            if (existente.cantidad >= existente.stockDisponible) {
+                Toast.makeText(this, "⚠️ Stock máximo alcanzado (${existente.stockDisponible})", Toast.LENGTH_SHORT).show()
+                return
+            }
+            // Incrementar cantidad del existente
+            itemsVenta[index] = existente.incrementar()
+            adapter.notifyItemChanged(index)
+            Toast.makeText(this, "Cantidad: ${itemsVenta[index].cantidad}/${existente.stockDisponible}", Toast.LENGTH_SHORT).show()
         } else {
+            // Agregar nuevo producto
             itemsVenta.add(
                 ItemVenta(
                     productoId = producto.id,
                     nombre = producto.nombre,
                     precioUnitario = producto.precio,
                     cantidad = 1,
+                    stockDisponible = producto.stock,
                     imagenUrl = producto.imagenUrl
                 )
             )
-            Toast.makeText(this, "✅ ${producto.nombre} agregado", Toast.LENGTH_SHORT).show()
+            adapter.notifyItemInserted(itemsVenta.size - 1)
+            Toast.makeText(this, "✅ ${producto.nombre} (Stock: ${producto.stock})", Toast.LENGTH_SHORT).show()
         }
-        updateList()
+        updateUI()
     }
 
-    private fun updateList() {
-        adapter.submitList(itemsVenta.toList())
+    private fun updateUI() {
         tvEmpty.visibility = if (itemsVenta.isEmpty()) View.VISIBLE else View.GONE
         rvProductos.visibility = if (itemsVenta.isEmpty()) View.GONE else View.VISIBLE
         btnConfirmarVenta.isEnabled = itemsVenta.isNotEmpty()
@@ -282,7 +297,8 @@ class VentaPresencialActivity : AppCompatActivity() {
                     Toast.makeText(this@VentaPresencialActivity,
                         "✅ Venta registrada exitosamente", Toast.LENGTH_LONG).show()
                     itemsVenta.clear()
-                    updateList()
+                    adapter.notifyDataSetChanged()
+                    updateUI()
                 } else {
                     Toast.makeText(this@VentaPresencialActivity,
                         "Error al registrar venta", Toast.LENGTH_SHORT).show()

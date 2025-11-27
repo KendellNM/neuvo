@@ -42,17 +42,22 @@ public class SecurityConfig {
                                 "/ws-delivery/**",
                                 "/app/**",
                                 "/topic/**",
-                                // catálogo público (opcional, ajusta según necesidad)
+                                // catálogo público
                                 "/api/productos/catalogo",
                                 "/api/productos/catalogo/search",
+                                "/api/productos/buscar",
+                                // Categorías públicas
+                                "/api/categorias",
+                                "/api/categorias/**",
                                 // Archivos estáticos (QR, imágenes)
                                 "/uploads/**"
                         ).permitAll()
+                        // Productos: GET público, POST/PUT/DELETE solo FARMACEUTICO o ADMIN
                         .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/categorias/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/productos/**").hasRole("FARMACEUTICO")
-                        .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasRole("FARMACEUTICO")
-                        .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("FARMACEUTICO")
+                        .requestMatchers(HttpMethod.GET, "/api/productos").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/productos/**").hasAnyRole("FARMACEUTICO", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasAnyRole("FARMACEUTICO", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasAnyRole("FARMACEUTICO", "ADMIN")
 
                         // Administración de roles y asignaciones: solo ADMIN
                         .requestMatchers("/api/roles/**").hasRole("ADMIN")
@@ -61,10 +66,25 @@ public class SecurityConfig {
                         // Flujos específicos por dominio
                         .requestMatchers(HttpMethod.POST, "/api/recetas/**").hasRole("MEDICO")
                         .requestMatchers(HttpMethod.POST, "/api/repartos/**").hasRole("REPARTIDOR")
-                        .requestMatchers(HttpMethod.POST, "/api/pedidos/**").hasAnyRole("CLIENTE", "FARMACEUTICO", "MEDICO")
+                        
+                        // Pedidos - Cliente puede crear y ver sus pedidos
+                        .requestMatchers(HttpMethod.GET, "/api/pedidos/**").hasAnyRole("CLIENTE", "FARMACEUTICO", "ADMIN", "REPARTIDOR")
+                        .requestMatchers(HttpMethod.POST, "/api/pedidos/**").hasAnyRole("CLIENTE", "FARMACEUTICO", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/pedidos/**").hasAnyRole("CLIENTE", "FARMACEUTICO", "ADMIN", "REPARTIDOR")
+                        
+                        // Usuario actual - todos los autenticados
+                        .requestMatchers("/api/usuarios/me").authenticated()
+                        .requestMatchers("/api/usuarios/current").authenticated()
+                        
+                        // Direcciones - Cliente puede gestionar sus direcciones
+                        .requestMatchers("/api/direcciones/**").hasAnyRole("CLIENTE", "ADMIN")
                         
                         // Recetas digitales (OCR) - Cliente y Admin pueden procesar
                         .requestMatchers("/api/recetas-digitales/**").hasAnyRole("CLIENTE", "ADMIN", "FARMACEUTICO")
+                        
+                        // Repartidores - ver ubicación
+                        .requestMatchers(HttpMethod.GET, "/api/repartidores/**").hasAnyRole("CLIENTE", "ADMIN", "REPARTIDOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/repartidores/**").hasAnyRole("REPARTIDOR", "ADMIN")
                         
                         .anyRequest().authenticated()
                 )

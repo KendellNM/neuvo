@@ -3,103 +3,255 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp">
+    android:layout_marginHorizontal="4dp"
+    android:layout_marginVertical="8dp"
+    app:cardBackgroundColor="@android:color/white"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="4dp"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
 
-        <!-- Header del pedido -->
+        <!-- Header -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/tv_numero_pedido"
+            <!-- Icono de prioridad -->
+            <FrameLayout
+                android:layout_width="48dp"
+                android:layout_height="48dp">
+
+                <View
+                    android:id="@+id/bgPrioridad"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_circle_estado" />
+
+                <ImageView
+                    android:id="@+id/ivIcono"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_delivery"
+                    app:tint="@android:color/white" />
+            </FrameLayout>
+
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Pedido #123"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="?android:attr/textColorPrimary" />
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tv_estado"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ASIGNADO"
-                android:textSize="12sp"
-                android:textColor="@android:color/white"
-                android:background="@drawable/bg_estado_badge"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="4dp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/tv_numero_pedido"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Pedido #123"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#1A1A2E" />
+
+                    <TextView
+                        android:id="@+id/tv_estado"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_badge_estado"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp"
+                        android:text="Asignado"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_tiempo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Hace 5 min"
+                    android:textSize="12sp"
+                    android:textColor="#9E9E9E" />
+            </LinearLayout>
         </LinearLayout>
 
-        <!-- Cliente -->
-        <TextView
-            android:id="@+id/tv_cliente"
+        <!-- Divider -->
+        <View
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="👤 Juan Pérez"
-            android:textSize="14sp"
-            android:textColor="?android:attr/textColorPrimary" />
+            android:layout_height="1dp"
+            android:layout_marginHorizontal="16dp"
+            android:background="#F0F0F0" />
 
-        <!-- Dirección -->
-        <TextView
-            android:id="@+id/tv_direccion"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="📍 Av. Principal 123, Lima"
-            android:textSize="14sp"
-            android:textColor="?android:attr/textColorSecondary"
-            android:maxLines="2"
-            android:ellipsize="end" />
-
-        <!-- Total -->
-        <TextView
-            android:id="@+id/tv_total"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="💰 Total: S/ 45.00"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/dolores" />
-
-        <!-- Botones de acción -->
+        <!-- Info del cliente y dirección -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="#FAFAFA">
+
+            <!-- Cliente -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_user"
+                    app:tint="#2196F3" />
+
+                <TextView
+                    android:id="@+id/tv_cliente"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="Juan Pérez"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="#1A1A2E" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_llamar"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:icon="@drawable/ic_phone"
+                    app:iconGravity="textStart"
+                    app:iconSize="18dp"
+                    app:iconTint="#4CAF50"
+                    app:cornerRadius="18dp"
+                    app:backgroundTint="#E8F5E9"
+                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
+            </LinearLayout>
+
+            <!-- Dirección -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:gravity="top">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_location"
+                    app:tint="#4CAF50" />
+
+                <TextView
+                    android:id="@+id/tv_direccion"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="Av. Principal 123, Lima"
+                    android:textSize="14sp"
+                    android:textColor="#424242"
+                    android:maxLines="2"
+                    android:ellipsize="end" />
+            </LinearLayout>
+
+            <!-- Distancia estimada -->
+            <LinearLayout
+                android:id="@+id/distanciaContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_distance"
+                    app:tint="#FF9800" />
+
+                <TextView
+                    android:id="@+id/tv_distancia"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="2.5 km - 10 min aprox"
+                    android:textSize="13sp"
+                    android:textColor="#757575" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Footer con total y botones -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Total a cobrar"
+                    android:textSize="11sp"
+                    android:textColor="#9E9E9E" />
+
+                <TextView
+                    android:id="@+id/tv_total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="S/ 45.00"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/purple_500" />
+            </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_ver_mapa"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:text="📍 Ver Mapa"
-                style="@style/Widget.Material3.Button.TonalButton"
-                app:cornerRadius="8dp" />
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:layout_marginEnd="8dp"
+                android:text="Mapa"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                app:icon="@drawable/ic_location"
+                app:iconGravity="textStart"
+                app:iconSize="18dp"
+                app:cornerRadius="12dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_iniciar_entrega"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:text="🚚 Iniciar"
-                app:cornerRadius="8dp"
-                app:backgroundTint="@color/dolores" />
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:text="Iniciar"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                app:icon="@drawable/ic_delivery"
+                app:iconGravity="textStart"
+                app:iconSize="18dp"
+                app:cornerRadius="12dp" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

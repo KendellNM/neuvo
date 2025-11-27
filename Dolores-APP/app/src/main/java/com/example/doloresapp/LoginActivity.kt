@@ -29,9 +29,10 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Inicializa almacenamiento de token y NetworkClient SIEMPRE
+        // Inicializa almacenamiento de token, NetworkClient y CartRepository
         TokenStore.init(applicationContext)
         NetworkClient.init(applicationContext)
+        com.example.doloresapp.data.cart.CartRepository.init(applicationContext)
         
         // Navega si ya hay sesión activa
         TokenStore.getToken()?.let { existing ->
@@ -145,8 +146,6 @@ class LoginActivity : AppCompatActivity() {
                     } catch (e: Exception) {
                         android.util.Log.e("Login", "Error obteniendo datos de usuario: ${e.message}")
                     }
-                    
-                    Toast.makeText(this@LoginActivity, "Login exitoso como ${userRole.name}", Toast.LENGTH_SHORT).show()
                     
                     // Redirigir a HomeActivity (maneja roles automáticamente)
                     startActivity(Intent(this@LoginActivity, HomeActivity::class.java))

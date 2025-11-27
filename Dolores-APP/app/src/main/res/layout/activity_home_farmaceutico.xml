@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/farmaceutico_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F8F9FA">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -16,153 +17,235 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Header con gradiente - se extiende hasta arriba -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="220dp"
+                android:layout_height="180dp"
                 android:background="@drawable/header_bg"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
                 android:paddingBottom="20dp"
-                android:paddingTop="48dp">
+                android:paddingTop="40dp">
 
-                <!-- Botón Cerrar Sesión -->
-                <ImageView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_logout"
-                    android:layout_width="36dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="36dp"
-                    android:src="@android:drawable/ic_lock_power_off"
-                    android:contentDescription="Cerrar Sesión"
-                    android:padding="6dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    app:tint="@android:color/white"
+                    android:text="Salir"
+                    android:textSize="12sp"
+                    app:icon="@android:drawable/ic_lock_power_off"
+                    app:iconSize="16dp"
+                    app:iconTint="@android:color/white"
+                    app:cornerRadius="18dp"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:textColor="@android:color/white"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
-
-                <!-- Avatar Farmacéutico -->
-                <ImageView
-                    android:id="@+id/iv_avatar"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:src="@drawable/ic_user"
-                    app:tint="@android:color/white"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginTop="16dp" />
 
                 <TextView
                     android:id="@+id/tv_bienvenida"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Panel de Farmacéutico"
+                    android:text="Panel Farmacéutico"
                     android:textColor="@android:color/white"
-                    android:textSize="22sp"
+                    android:textSize="24sp"
                     android:textStyle="bold"
-                    app:layout_constraintTop_toBottomOf="@id/iv_avatar"
+                    app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginTop="12dp" />
+                    android:layout_marginTop="8dp" />
 
                 <TextView
                     android:id="@+id/tv_rol"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="💊 Farmacéutico"
+                    android:text="Farmacia Dolores"
                     android:textColor="@android:color/white"
                     android:textSize="14sp"
                     android:alpha="0.9"
                     app:layout_constraintTop_toBottomOf="@id/tv_bienvenida"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginTop="4dp" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- Contenido -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="16dp"
-                android:background="?android:attr/colorBackground">
+                android:layout_marginTop="-24dp">
 
-                <TextView
+                <androidx.gridlayout.widget.GridLayout
+                    xmlns:grid="http://schemas.android.com/apk/res-auto"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Herramientas de Trabajo"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:layout_marginBottom="12dp" />
+                    grid:columnCount="2"
+                    grid:useDefaultMargins="true">
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardElevation="2dp"
-                    app:cardCornerRadius="16dp"
-                    app:strokeWidth="0dp">
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_venta"
+                        android:layout_width="0dp"
+                        android:layout_height="120dp"
+                        grid:layout_columnWeight="1"
+                        app:cardElevation="4dp"
+                        app:cardCornerRadius="16dp"
+                        android:layout_margin="6dp">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_escanear_qr"
+                        <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="56dp"
-                            android:text="🛒 Venta Presencial (Escanear)"
-                            app:cornerRadius="12dp"
-                            style="@style/Widget.Material3.Button" />
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="12dp"
+                            android:background="?attr/selectableItemBackground">
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_validar_recetas"
-                            android:layout_width="match_parent"
-                            android:layout_height="56dp"
-                            android:layout_marginTop="8dp"
-                            android:text="📋 Validar Recetas Pendientes"
-                            app:cornerRadius="12dp"
-                            style="@style/Widget.Material3.Button.TonalButton" />
+                            <ImageView
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:src="@drawable/ic_shopping_cart"
+                                app:tint="@color/primary" />
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_ver_productos"
-                            android:layout_width="match_parent"
-                            android:layout_height="56dp"
-                            android:layout_marginTop="8dp"
-                            android:text="💊 Inventario de Productos"
-                            app:cornerRadius="12dp"
-                            style="@style/Widget.Material3.Button.TonalButton" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Venta"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                android:layout_marginTop="8dp" />
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_stock"
-                            android:layout_width="match_parent"
-                            android:layout_height="56dp"
-                            android:layout_marginTop="8dp"
-                            android:text="📊 Control de Stock"
-                            app:cornerRadius="12dp"
-                            style="@style/Widget.Material3.Button.TonalButton" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Escanear productos"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_secondary" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_consultas"
-                            android:layout_width="match_parent"
-                            android:layout_height="56dp"
-                            android:layout_marginTop="8dp"
-                            android:text="💬 Consultas de Clientes"
-                            app:cornerRadius="12dp"
-                            style="@style/Widget.Material3.Button.TonalButton" />
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_recetas"
+                        android:layout_width="0dp"
+                        android:layout_height="120dp"
+                        grid:layout_columnWeight="1"
+                        app:cardElevation="4dp"
+                        app:cardCornerRadius="16dp"
+                        android:layout_margin="6dp">
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_notificaciones"
+                        <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="56dp"
-                            android:layout_marginTop="8dp"
-                            android:text="🔔 Notificaciones"
-                            app:cornerRadius="12dp"
-                            style="@style/Widget.Material3.Button.TonalButton" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="12dp"
+                            android:background="?attr/selectableItemBackground">
+
+                            <ImageView
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:src="@drawable/ic_prescription"
+                                app:tint="@color/secondary" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Recetas"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                android:layout_marginTop="8dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Validar pendientes"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_secondary" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_inventario"
+                        android:layout_width="0dp"
+                        android:layout_height="120dp"
+                        grid:layout_columnWeight="1"
+                        app:cardElevation="4dp"
+                        app:cardCornerRadius="16dp"
+                        android:layout_margin="6dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="12dp"
+                            android:background="?attr/selectableItemBackground">
+
+                            <ImageView
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:src="@drawable/ic_medication"
+                                app:tint="#FF9800" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Inventario"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                android:layout_marginTop="8dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Ver productos"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_secondary" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_stock"
+                        android:layout_width="0dp"
+                        android:layout_height="120dp"
+                        grid:layout_columnWeight="1"
+                        app:cardElevation="4dp"
+                        app:cardCornerRadius="16dp"
+                        android:layout_margin="6dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="12dp"
+                            android:background="?attr/selectableItemBackground">
+
+                            <ImageView
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:src="@drawable/ic_note"
+                                app:tint="#9C27B0" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Stock"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                android:layout_marginTop="8dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Control inventario"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_secondary" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </androidx.gridlayout.widget.GridLayout>
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

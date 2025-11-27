@@ -1,180 +1,415 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout 
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <!-- Imagen del producto (parte superior) -->
+    <FrameLayout
+        android:id="@+id/imageContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="340dp"
+        android:background="#F3F4F6">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
+        <ImageView
+            android:id="@+id/imgProducto"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:navigationIcon="@drawable/ic_arrow_back" />
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_medication"
+            android:padding="48dp" />
 
-    </com.google.android.material.appbar.AppBarLayout>
+        <!-- Gradiente inferior -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/gradient_white_bottom" />
 
+        <!-- Header flotante con botones -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:paddingHorizontal="20dp"
+            android:gravity="center_vertical">
+
+            <!-- Botón Volver -->
+            <FrameLayout
+                android:id="@+id/btnBack"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_button_glass"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="#064E3B" />
+            </FrameLayout>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- Botón Favorito -->
+            <FrameLayout
+                android:id="@+id/btnFavorito"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_button_glass"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:id="@+id/icFavorito"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_heart"
+                    app:tint="#EF4444" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <!-- Badge Receta -->
+        <TextView
+            android:id="@+id/tvRequiereReceta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="100dp"
+            android:layout_marginEnd="20dp"
+            android:background="@drawable/bg_badge_warning"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
+            android:text="Requiere Receta"
+            android:textColor="@android:color/white"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- Contenido con scroll -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:layout_marginTop="300dp"
+        android:background="@drawable/bg_sheet_rounded"
+        android:clipToPadding="false"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="28dp"
+            android:paddingBottom="120dp">
 
-            <ImageView
-                android:id="@+id/imgProducto"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:scaleType="centerCrop"
-                android:contentDescription="Imagen del producto" />
+            <!-- Categoría Badge -->
+            <TextView
+                android:id="@+id/tvCategoria"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_category_badge"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:text="MEDICAMENTO"
+                android:textAllCaps="true"
+                android:textColor="#10B981"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:layout_marginBottom="8dp" />
 
+            <!-- Nombre y Precio -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:orientation="horizontal"
+                android:gravity="top"
+                android:layout_marginBottom="12dp">
 
                 <TextView
                     android:id="@+id/tvNombre"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="16dp"
+                    android:text="Nombre del Producto"
+                    android:textColor="#064E3B"
                     android:textSize="24sp"
-                    android:textStyle="bold" />
-
+                    android:textStyle="bold"
+                    android:lineSpacingExtra="4dp" />
 
                 <TextView
                     android:id="@+id/tvPrecio"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textSize="28sp"
-                    android:textColor="@color/primary"
+                    android:text="S/ 0.00"
+                    android:textColor="#059669"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Rating -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="20dp">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_star"
+                    app:tint="#FBBF24" />
+
+                <TextView
+                    android:id="@+id/tvRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="4.8"
+                    android:textColor="#064E3B"
+                    android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/tvCategoria"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textSize="14sp" />
-
-                <TextView
                     android:id="@+id/tvStock"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:textSize="14sp"
-                    android:textColor="@color/success" />
+                    android:layout_marginStart="12dp"
+                    android:text="• Stock: 50 unidades"
+                    android:textColor="#6B7280"
+                    android:textSize="13sp" />
+            </LinearLayout>
 
-                <TextView
-                    android:id="@+id/tvDescripcion"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:textSize="16sp" />
+            <!-- Descripción -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Descripción"
+                android:textColor="#064E3B"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
 
-                <!-- Código QR del producto -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardQR"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
-                    android:visibility="gone">
+            <TextView
+                android:id="@+id/tvDescripcion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Descripción del producto..."
+                android:textColor="#6B7280"
+                android:textSize="14sp"
+                android:lineSpacingExtra="6dp"
+                android:layout_marginBottom="24dp" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp"
-                        android:gravity="center">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="📱 Código QR del Producto"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-
-                        <ImageView
-                            android:id="@+id/imgQR"
-                            android:layout_width="150dp"
-                            android:layout_height="150dp"
-                            android:layout_marginTop="8dp"
-                            android:contentDescription="Código QR" />
-
-                        <TextView
-                            android:id="@+id/tvCodigoBarras"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:textSize="12sp"
-                            android:textColor="?android:attr/textColorSecondary" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+            <!-- Info adicional -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#F0FDF4"
+                android:layout_marginBottom="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_check_circle"
+                            app:tint="#10B981" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="Producto verificado"
+                            android:textColor="#064E3B"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_delivery"
+                            app:tint="#10B981" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="Envío disponible"
+                            android:textColor="#064E3B"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_time"
+                            app:tint="#10B981" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="Entrega en 24-48 horas"
+                            android:textColor="#064E3B"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- QR Code Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardQR"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="center">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Cantidad:"
-                        android:textSize="16sp"
-                        android:layout_marginEnd="16dp" />
+                        android:text="Código QR del Producto"
+                        android:textColor="#064E3B"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
 
-                    <ImageButton
-                        android:id="@+id/btnMenos"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_remove"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="Disminuir cantidad" />
+                    <ImageView
+                        android:id="@+id/imgQR"
+                        android:layout_width="150dp"
+                        android:layout_height="150dp"
+                        android:layout_marginBottom="8dp" />
 
                     <TextView
-                        android:id="@+id/tvCantidad"
-                        android:layout_width="60dp"
+                        android:id="@+id/tvCodigoBarras"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="1"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:gravity="center" />
-
-                    <ImageButton
-                        android:id="@+id/btnMas"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_add"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="Aumentar cantidad" />
-
+                        android:text="Código: 000000"
+                        android:textColor="#6B7280"
+                        android:textSize="12sp" />
                 </LinearLayout>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAgregarCarrito"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:text="Agregar al Carrito"
-                    android:textSize="16sp"
-                    app:icon="@drawable/ic_shopping_cart" />
-
-            </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
-
     </androidx.core.widget.NestedScrollView>
+
+    <!-- Bottom Bar Fijo -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="16dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:gravity="center_vertical">
+
+            <!-- Selector de cantidad -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_quantity_selector"
+                android:padding="4dp"
+                android:gravity="center_vertical">
+
+                <ImageButton
+                    android:id="@+id/btnMenos"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_quantity_btn"
+                    android:src="@drawable/ic_remove"
+                    app:tint="#064E3B"
+                    android:contentDescription="Menos" />
+
+                <TextView
+                    android:id="@+id/tvCantidad"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="1"
+                    android:textColor="#064E3B"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <ImageButton
+                    android:id="@+id/btnMas"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_quantity_btn_dark"
+                    android:src="@drawable/ic_add"
+                    app:tint="@android:color/white"
+                    android:contentDescription="Más" />
+            </LinearLayout>
+
+            <!-- Botón Agregar al Carrito -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAgregarCarrito"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:text="Agregar al Carrito"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:backgroundTint="#064E3B"
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_shopping_cart"
+                app:iconSize="20dp"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <ProgressBar
         android:id="@+id/progressBar"

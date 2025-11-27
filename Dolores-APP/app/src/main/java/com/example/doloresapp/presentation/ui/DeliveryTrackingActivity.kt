@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -24,25 +26,23 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import java.util.Date
 
-/**
- * Activity para tracking de delivery usando OSMDroid (OpenStreetMap)
- * 100% GRATIS - SIN API KEY
- */
 class DeliveryTrackingActivity : AppCompatActivity() {
     
-    private lateinit var mapView: MapView
-    private lateinit var webSocketClient: DeliveryWebSocketClient
-    private lateinit var database: AppDatabase
-    private lateinit var estadoTextView: TextView
-    private lateinit var tvDistancia: TextView
-    private lateinit var tvTiempo: TextView
+    private var mapView: MapView? = null
+    private var webSocketClient: DeliveryWebSocketClient? = null
+    private var database: AppDatabase? = null
+    private var tvTiempo: TextView? = null
+    private var tvDireccion: TextView? = null
+    private var tvRepartidorNombre: TextView? = null
+    private var tvConnection: TextView? = null
+    private var progressBar: View? = null
     
     private var pedidoId: Long = 0
     private var repartidorMarker: Marker? = null
     private var destinoMarker: Marker? = null
-    
-    // Coordenadas de destino (dirección del cliente)
     private var destinoGeoPoint: GeoPoint? = null
+    private var currentProgress = 10 // Porcentaje inicial
+    private var isMapInitialized = false
     
     companion object {
         private const val LOCATION_PERMISSION_CODE = 101
@@ -51,67 +51,177 @@ class DeliveryTrackingActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Configurar OSMDroid
-        Configuration.getInstance().load(this, getSharedPreferences("osmdroid", MODE_PRIVATE))
-        Configuration.getInstance().userAgentValue = packageName
-        
-        // Verificar que el usuario sea cliente
-        if (!com.example.doloresapp.utils.RoleManager.isCliente(this)) {
-            Toast.makeText(this, "⚠️ Solo clientes pueden ver el tracking de pedidos", Toast.LENGTH_LONG).show()
+        try {
+            // Configurar OSMDroid
+            Configuration.getInstance().load(this, getSharedPreferences("osmdroid", MODE_PRIVATE))
+            Configuration.getInstance().userAgentValue = packageName
+            
+            setContentView(R.layout.activity_delivery_tracking)
+            
+            pedidoId = intent.getLongExtra("pedido_id", 0)
+            
+            // Obtener coordenadas de destino
+            val destinoLat = intent.getDoubleExtra("destino_lat", -12.0464)
+            val destinoLng = intent.getDoubleExtra("destino_lng", -77.0428)
+            destinoGeoPoint = GeoPoint(destinoLat, destinoLng)
+            
+            // Obtener dirección si viene en el intent
+            val direccion = intent.getStringExtra("direccion") ?: "Dirección de entrega"
+            
+            initViews()
+            setupClickListeners()
+            
+            tvDireccion?.text = direccion
+            
+            database = AppDatabase.getDatabase(this)
+            webSocketClient = DeliveryWebSocketClient(Constants.BASE_URL)
+            
+            setupMap()
+            checkLocationPermission()
+            
+            // Animar barra de progreso inicial
+            animateProgress(65) // 65% = En camino
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Error al iniciar seguimiento: ${e.message}", Toast.LENGTH_LONG).show()
             finish()
+        }
+    }
+    
+    private fun initViews() {
+        tvTiempo = findViewById(R.id.tv_tiempo)
+        tvDireccion = findViewById(R.id.tvDireccionEntrega)
+        tvRepartidorNombre = findViewById(R.id.tvRepartidorNombre)
+        tvConnection = findViewById(R.id.tvConnection)
+        progressBar = findViewById(R.id.progressBar)
+        
+        // Valores por defecto
+        tvTiempo?.text = "15-20"
+        tvRepartidorNombre?.text = "Carlos M."
+    }
+    
+    private fun setupClickListeners() {
+        // Botón volver
+        findViewById<View>(R.id.btnBack)?.setOnClickListener {
+            finish()
+        }
+        
+        // Botón llamar
+        findViewById<View>(R.id.btnLlamar)?.setOnClickListener {
+            Toast.makeText(this, "Llamando al repartidor...", Toast.LENGTH_SHORT).show()
+        }
+        
+        // Botón navegar - buscar por recursos
+        try {
+            val btnNavegarId = resources.getIdentifier("btnNavegar", "id", packageName)
+            if (btnNavegarId != 0) {
+                findViewById<View>(btnNavegarId)?.setOnClickListener {
+                    destinoGeoPoint?.let { destino ->
+                        mapView?.controller?.animateTo(destino)
+                        mapView?.controller?.setZoom(17.0)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        
+        // FAB centrar
+        findViewById<View>(R.id.fabCentrar)?.setOnClickListener {
+            repartidorMarker?.position?.let { pos ->
+                mapView?.controller?.animateTo(pos)
+            }
+        }
+    }
+    
+    private fun animateProgress(targetPercent: Int) {
+        val bar = progressBar ?: return
+        val parent = bar.parent as? ViewGroup ?: return
+        val totalWidth = parent.width
+        
+        // Si el parent aún no tiene width, esperar
+        if (totalWidth == 0) {
+            bar.post { animateProgress(targetPercent) }
             return
         }
         
-        setContentView(R.layout.activity_delivery_tracking)
+        val targetWidth = (totalWidth * targetPercent / 100)
         
-        pedidoId = intent.getLongExtra("pedido_id", 0)
+        bar.animate()
+            .setDuration(1000)
+            .withStartAction {
+                val params = bar.layoutParams
+                params.width = (totalWidth * currentProgress / 100)
+                bar.layoutParams = params
+            }
+            .withEndAction {
+                val params = bar.layoutParams
+                params.width = targetWidth
+                bar.layoutParams = params
+                currentProgress = targetPercent
+            }
+            .start()
         
-        // Obtener coordenadas de destino (dirección del cliente)
-        val destinoLat = intent.getDoubleExtra("destino_lat", -12.0464)
-        val destinoLng = intent.getDoubleExtra("destino_lng", -77.0428)
-        destinoGeoPoint = GeoPoint(destinoLat, destinoLng)
+        // Actualizar labels según progreso
+        updateProgressLabels(targetPercent)
+    }
+    
+    private fun updateProgressLabels(percent: Int) {
+        val tvStep1 = findViewById<TextView>(R.id.tvStep1)
+        val tvStep2 = findViewById<TextView>(R.id.tvStep2)
+        val tvStep3 = findViewById<TextView>(R.id.tvStep3)
         
-        estadoTextView = findViewById(R.id.tv_estado)
-        tvDistancia = findViewById(R.id.tv_distancia)
-        tvTiempo = findViewById(R.id.tv_tiempo)
-        
-        database = AppDatabase.getDatabase(this)
-        webSocketClient = DeliveryWebSocketClient(Constants.BASE_URL)
-        
-        setupMap()
-        checkLocationPermission()
+        when {
+            percent >= 100 -> {
+                tvStep1?.setTextColor(getColor(R.color.teal_900))
+                tvStep2?.setTextColor(getColor(R.color.teal_900))
+                tvStep3?.setTextColor(getColor(R.color.teal_900))
+                tvConnection?.text = "Entregado"
+            }
+            percent >= 50 -> {
+                tvStep1?.setTextColor(getColor(R.color.teal_900))
+                tvStep2?.setTextColor(getColor(R.color.teal_900))
+                tvStep3?.setTextColor(getColor(R.color.text_secondary))
+                tvConnection?.text = "En camino"
+            }
+            else -> {
+                tvStep1?.setTextColor(getColor(R.color.teal_900))
+                tvStep2?.setTextColor(getColor(R.color.text_secondary))
+                tvStep3?.setTextColor(getColor(R.color.text_secondary))
+                tvConnection?.text = "Confirmado"
+            }
+        }
     }
     
     private fun setupMap() {
         try {
             mapView = findViewById(R.id.map_view)
-            mapView.setTileSource(TileSourceFactory.MAPNIK)
-            mapView.setMultiTouchControls(true)
+            val map = mapView ?: return
             
-            // Configurar zoom
-            mapView.controller.setZoom(15.0)
+            map.setTileSource(TileSourceFactory.MAPNIK)
+            map.setMultiTouchControls(true)
+            map.controller.setZoom(15.0)
             
-            // Marcar destino (dirección del cliente)
+            // Marcar destino
             destinoGeoPoint?.let { destino ->
-                destinoMarker = Marker(mapView).apply {
+                destinoMarker = Marker(map).apply {
                     position = destino
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                    title = "📍 Destino de Entrega"
+                    title = "📍 Destino"
                     icon = ContextCompat.getDrawable(this@DeliveryTrackingActivity, R.drawable.ic_destination_marker)
                         ?: getDefaultMarkerDrawable()
                 }
-                mapView.overlays.add(destinoMarker)
-                mapView.controller.setCenter(destino)
+                map.overlays.add(destinoMarker)
+                map.controller.setCenter(destino)
             }
+            
+            isMapInitialized = true
         } catch (e: Exception) {
-            Toast.makeText(this, "Error inicializando mapa: ${e.message}", Toast.LENGTH_LONG).show()
             e.printStackTrace()
+            Toast.makeText(this, "Error inicializando mapa: ${e.message}", Toast.LENGTH_SHORT).show()
         }
         
-        // Cargar última ubicación guardada
         loadLastLocation()
-        
-        // Conectar WebSocket
         connectWebSocket()
     }
     
@@ -120,11 +230,8 @@ class DeliveryTrackingActivity : AppCompatActivity() {
     }
     
     private fun checkLocationPermission() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) 
+            != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
@@ -135,91 +242,100 @@ class DeliveryTrackingActivity : AppCompatActivity() {
     
     private fun loadLastLocation() {
         lifecycleScope.launch {
-            val ultimaUbicacion = database.ubicacionDeliveryDao().getUltimaUbicacion(pedidoId)
-            ultimaUbicacion?.let {
-                updateMapLocation(it.latitud, it.longitud)
+            try {
+                val ultimaUbicacion = database?.ubicacionDeliveryDao()?.getUltimaUbicacion(pedidoId)
+                ultimaUbicacion?.let {
+                    updateMapLocation(it.latitud, it.longitud)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
     
     private fun connectWebSocket() {
         try {
-            webSocketClient.connect(
+            webSocketClient?.connect(
                 onConnected = {
                     runOnUiThread {
-                        Toast.makeText(this, "✅ Conectado al seguimiento", Toast.LENGTH_SHORT).show()
+                        findViewById<View>(R.id.dotConnection)?.setBackgroundResource(R.drawable.bg_dot_green)
                     }
                     subscribeToDelivery()
                 },
-                onError = { error ->
+                onError = { _ ->
                     runOnUiThread {
-                        // No mostrar error, el tracking puede funcionar sin WebSocket
-                        estadoTextView.text = "Estado: Sin conexión en tiempo real"
+                        tvConnection?.text = "Sin conexión"
                     }
                 }
             )
         } catch (e: Exception) {
-            // WebSocket es opcional
             e.printStackTrace()
         }
     }
     
     private fun subscribeToDelivery() {
-        webSocketClient.subscribeToDelivery(pedidoId) { update ->
+        webSocketClient?.subscribeToDelivery(pedidoId) { update ->
             runOnUiThread {
                 updateMapLocation(update.latitud, update.longitud)
                 
                 update.estado?.let { estado ->
-                    estadoTextView.text = "Estado: $estado"
+                    when (estado.uppercase()) {
+                        "ENTREGADO" -> animateProgress(100)
+                        "EN_CAMINO" -> animateProgress(65)
+                        "ASIGNADO" -> animateProgress(30)
+                        else -> animateProgress(10)
+                    }
                 }
                 
-                // Guardar en base de datos local
                 lifecycleScope.launch {
-                    database.ubicacionDeliveryDao().insertUbicacion(
-                        UbicacionDeliveryEntity(
-                            pedidoId = pedidoId,
-                            latitud = update.latitud,
-                            longitud = update.longitud,
-                            timestamp = Date()
+                    try {
+                        database?.ubicacionDeliveryDao()?.insertUbicacion(
+                            UbicacionDeliveryEntity(
+                                pedidoId = pedidoId,
+                                latitud = update.latitud,
+                                longitud = update.longitud,
+                                timestamp = Date()
+                            )
                         )
-                    )
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             }
         }
     }
     
     private fun updateMapLocation(latitud: Double, longitud: Double) {
+        val map = mapView ?: return
+        if (!isMapInitialized) return
+        
         val location = GeoPoint(latitud, longitud)
         
-        // Actualizar marcador del repartidor
-        repartidorMarker?.let { mapView.overlays.remove(it) }
+        repartidorMarker?.let { map.overlays.remove(it) }
         
-        repartidorMarker = Marker(mapView).apply {
+        repartidorMarker = Marker(map).apply {
             position = location
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             title = "🚚 Repartidor"
             icon = ContextCompat.getDrawable(this@DeliveryTrackingActivity, R.drawable.ic_delivery_marker)
                 ?: getDefaultMarkerDrawable()
         }
-        mapView.overlays.add(repartidorMarker)
+        map.overlays.add(repartidorMarker)
+        map.controller.animateTo(location)
+        map.invalidate()
         
-        mapView.controller.animateTo(location)
-        mapView.invalidate()
-        
-        // Dibujar ruta desde repartidor hasta destino
+        // Calcular ruta y tiempo
         destinoGeoPoint?.let { destino ->
             lifecycleScope.launch {
-                val routeInfo = DirectionsHelper.drawRoute(
-                    mapView,
-                    location,
-                    destino
-                )
-                
-                routeInfo?.let { info ->
-                    runOnUiThread {
-                        tvDistancia.text = "📍 Distancia: ${String.format("%.2f", info.distanceKm)} km"
-                        tvTiempo.text = "⏱️ Tiempo estimado: ${info.durationMinutes} min"
+                try {
+                    val routeInfo = DirectionsHelper.drawRoute(map, location, destino)
+                    routeInfo?.let { info ->
+                        runOnUiThread {
+                            tvTiempo?.text = "${info.durationMinutes}-${info.durationMinutes + 5}"
+                        }
                     }
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
             }
         }
@@ -227,16 +343,20 @@ class DeliveryTrackingActivity : AppCompatActivity() {
     
     override fun onResume() {
         super.onResume()
-        mapView.onResume()
+        mapView?.onResume()
     }
     
     override fun onPause() {
         super.onPause()
-        mapView.onPause()
+        mapView?.onPause()
     }
     
     override fun onDestroy() {
         super.onDestroy()
-        webSocketClient.disconnect()
+        try {
+            webSocketClient?.disconnect()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

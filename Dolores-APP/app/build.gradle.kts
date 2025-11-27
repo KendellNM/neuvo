@@ -61,6 +61,9 @@ dependencies {
     // SwipeRefreshLayout
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     
+    // GridLayout
+    implementation("androidx.gridlayout:gridlayout:1.0.0")
+    
     // Room Database (SQLite)
     implementation("androidx.room:room-runtime:2.6.0")
     implementation("androidx.room:room-ktx:2.6.0")

@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/repartidor_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F8F9FA">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -16,170 +17,195 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Header con gradiente -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="220dp"
+                android:layout_height="180dp"
                 android:background="@drawable/header_bg"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
                 android:paddingBottom="20dp"
-                android:paddingTop="48dp">
+                android:paddingTop="40dp">
 
-                <!-- Botón Cerrar Sesión -->
-                <ImageView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_logout"
-                    android:layout_width="36dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="36dp"
-                    android:src="@android:drawable/ic_lock_power_off"
-                    android:contentDescription="Cerrar Sesión"
-                    android:padding="6dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    app:tint="@android:color/white"
+                    android:text="Salir"
+                    android:textSize="12sp"
+                    app:icon="@android:drawable/ic_lock_power_off"
+                    app:iconSize="16dp"
+                    app:iconTint="@android:color/white"
+                    app:cornerRadius="18dp"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:textColor="@android:color/white"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
-
-                <!-- Avatar Repartidor -->
-                <ImageView
-                    android:id="@+id/iv_avatar"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:src="@drawable/ic_user"
-                    app:tint="@android:color/white"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginTop="16dp" />
 
                 <TextView
                     android:id="@+id/tv_bienvenida"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Panel de Entregas"
+                    android:text="Panel Delivery"
                     android:textColor="@android:color/white"
-                    android:textSize="22sp"
+                    android:textSize="24sp"
                     android:textStyle="bold"
-                    app:layout_constraintTop_toBottomOf="@id/iv_avatar"
+                    app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginTop="12dp" />
+                    android:layout_marginTop="8dp" />
 
                 <TextView
                     android:id="@+id/tv_rol"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🚚 Repartidor"
+                    android:text="Farmacia Dolores"
                     android:textColor="@android:color/white"
                     android:textSize="14sp"
                     android:alpha="0.9"
                     app:layout_constraintTop_toBottomOf="@id/tv_bienvenida"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginTop="4dp" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- Contenido -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="16dp"
-                android:background="?android:attr/colorBackground">
+                android:layout_marginTop="-24dp">
 
-                <TextView
+                <androidx.gridlayout.widget.GridLayout
+                    xmlns:grid="http://schemas.android.com/apk/res-auto"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Mis Entregas"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:layout_marginBottom="12dp" />
+                    grid:columnCount="2"
+                    grid:useDefaultMargins="true">
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardElevation="2dp"
-                    app:cardCornerRadius="16dp"
-                    app:strokeWidth="0dp">
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_asignados"
+                        android:layout_width="0dp"
+                        android:layout_height="120dp"
+                        grid:layout_columnWeight="1"
+                        app:cardElevation="4dp"
+                        app:cardCornerRadius="16dp"
+                        android:layout_margin="6dp">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_pedidos_asignados"
+                        <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="64dp"
-                            android:text="📦 Pedidos Asignados"
-                            android:textSize="16sp"
-                            app:cornerRadius="12dp"
-                            app:backgroundTint="@color/dolores" />
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="12dp"
+                            android:background="?attr/selectableItemBackground">
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_entrega_activa"
+                            <ImageView
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:src="@drawable/ic_delivery"
+                                app:tint="@color/primary" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Asignados"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                android:layout_marginTop="8dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Pedidos pendientes"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_secondary" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_en_camino"
+                        android:layout_width="0dp"
+                        android:layout_height="120dp"
+                        grid:layout_columnWeight="1"
+                        app:cardElevation="4dp"
+                        app:cardCornerRadius="16dp"
+                        android:layout_margin="6dp">
+
+                        <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="56dp"
-                            android:layout_marginTop="8dp"
-                            android:text="🚚 Entrega en Curso"
-                            app:cornerRadius="12dp"
-                            style="@style/Widget.Material3.Button.TonalButton" />
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="12dp"
+                            android:background="?attr/selectableItemBackground">
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_historial"
+                            <ImageView
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:src="@drawable/ic_location"
+                                app:tint="@color/secondary" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="En Camino"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                android:layout_marginTop="8dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Entregas activas"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_secondary" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/card_historial"
+                        android:layout_width="0dp"
+                        android:layout_height="120dp"
+                        grid:layout_columnWeight="1"
+                        grid:layout_columnSpan="2"
+                        app:cardElevation="4dp"
+                        app:cardCornerRadius="16dp"
+                        android:layout_margin="6dp">
+
+                        <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="56dp"
-                            android:layout_marginTop="8dp"
-                            android:text="📊 Historial de Entregas"
-                            app:cornerRadius="12dp"
-                            style="@style/Widget.Material3.Button.TonalButton" />
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="12dp"
+                            android:background="?attr/selectableItemBackground">
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_notificaciones"
-                            android:layout_width="match_parent"
-                            android:layout_height="56dp"
-                            android:layout_marginTop="8dp"
-                            android:text="🔔 Notificaciones"
-                            app:cornerRadius="12dp"
-                            style="@style/Widget.Material3.Button.TonalButton" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                            <ImageView
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:src="@drawable/ic_note"
+                                app:tint="#9C27B0" />
 
-                <!-- Card informativo -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    app:cardElevation="2dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardBackgroundColor="@color/dolores_light">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Historial"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary"
+                                android:layout_marginTop="8dp" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Entregas completadas"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_secondary" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="ℹ️ Cómo funciona"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/dolores" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="1. Los pedidos se asignan automáticamente\n2. Ve a 'Pedidos Asignados' para ver tus entregas\n3. Selecciona un pedido para iniciar la entrega\n4. Tu ubicación se compartirá con el cliente"
-                            android:textSize="14sp"
-                            android:textColor="?android:attr/textColorSecondary"
-                            android:lineSpacingExtra="4dp" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                </androidx.gridlayout.widget.GridLayout>
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

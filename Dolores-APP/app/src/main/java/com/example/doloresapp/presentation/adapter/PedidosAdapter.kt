@@ -37,7 +37,12 @@ class PedidosAdapter(
         private val btnTracking: android.widget.Button = itemView.findViewById(R.id.btnTracking)
         
         fun bind(pedido: PedidoDTO) {
-            tvNumero.text = "Pedido #${pedido.id}"
+            // Mostrar descripción si existe, sino mostrar ID corto
+            tvNumero.text = if (!pedido.notas.isNullOrBlank()) {
+                pedido.notas
+            } else {
+                "Pedido #${pedido.id}"
+            }
             tvTotal.text = "S/ %.2f".format(pedido.total ?: 0.0)
             tvFecha.text = pedido.fechaCreacion ?: ""
             tvDireccion.text = pedido.direccionEntrega ?: "Sin dirección"

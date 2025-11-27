@@ -33,9 +33,10 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        // Asegurar que NetworkClient esté inicializado
+        // Asegurar que NetworkClient y CartRepository estén inicializados
         TokenStore.init(applicationContext)
         NetworkClient.init(applicationContext)
+        com.example.doloresapp.data.cart.CartRepository.init(applicationContext)
         
         val userRole = RoleManager.getUserRole(this)
         
@@ -87,43 +88,139 @@ class HomeActivity : AppCompatActivity() {
         val userEmail = prefs.getString(ApiConstants.Prefs.USER_EMAIL, "Usuario") ?: "Usuario"
         val displayName = extractNameFromEmail(userEmail)
         
-        tvBienvenida.text = "Hola, $displayName"
-        tvRol.text = "👤 Cliente"
+        tvBienvenida.text = "Farmacia Dolores"
         
-        // Botón logout
-        findViewById<View>(R.id.btn_logout)?.setOnClickListener { showLogoutDialog() }
-        
-        // Botón Ver Productos
-        findViewById<Button>(R.id.btn_productos)?.setOnClickListener {
+        // Categorías
+        findViewById<View>(R.id.cat_productos)?.setOnClickListener {
             startActivity(Intent(this, ProductosActivity::class.java))
         }
+        findViewById<View>(R.id.cat_carrito)?.setOnClickListener {
+            startActivity(Intent(this, CarritoActivity::class.java))
+        }
+        findViewById<View>(R.id.cat_pedidos)?.setOnClickListener {
+            startActivity(Intent(this, MisPedidosActivity::class.java))
+        }
+        findViewById<View>(R.id.cat_perfil)?.setOnClickListener {
+            showLogoutDialog()
+        }
         
-        // Botones para cliente
-        findViewById<Button>(R.id.btn_escanear_qr).setOnClickListener {
+        // Banner escanear
+        findViewById<View>(R.id.btn_escanear)?.setOnClickListener {
             startActivity(Intent(this, QRScannerActivity::class.java))
         }
         
-        findViewById<Button>(R.id.btn_recetas).setOnClickListener {
-            startActivity(Intent(this, RecetaDigitalActivity::class.java))
+        // Barra de búsqueda
+        findViewById<View>(R.id.card_buscar)?.setOnClickListener {
+            startActivity(Intent(this, ProductosActivity::class.java))
         }
         
-        findViewById<Button>(R.id.btn_fidelizacion).setOnClickListener {
-            startActivity(Intent(this, FidelizacionActivity::class.java))
-        }
-        
-        // Carrito
-        findViewById<Button>(R.id.btn_carrito)?.setOnClickListener {
+        // Carrito header
+        findViewById<View>(R.id.btn_carrito)?.setOnClickListener {
             startActivity(Intent(this, CarritoActivity::class.java))
         }
         
-        // Mis Pedidos y Seguimiento
-        findViewById<Button>(R.id.btn_mis_pedidos)?.setOnClickListener {
-            startActivity(Intent(this, MisPedidosActivity::class.java))
+        // Ver todos productos
+        findViewById<View>(R.id.btn_ver_todos)?.setOnClickListener {
+            startActivity(Intent(this, ProductosActivity::class.java))
         }
         
-        // Notificaciones
-        findViewById<Button>(R.id.btn_notificaciones).setOnClickListener {
-            startActivity(Intent(this, NotificacionesActivity::class.java))
+        // Bottom navigation
+        findViewById<View>(R.id.tab_tienda)?.setOnClickListener {
+            startActivity(Intent(this, ProductosActivity::class.java))
+        }
+        findViewById<View>(R.id.tab_pedidos)?.setOnClickListener {
+            startActivity(Intent(this, MisPedidosActivity::class.java))
+        }
+        findViewById<View>(R.id.fab_escanear)?.setOnClickListener {
+            startActivity(Intent(this, QRScannerActivity::class.java))
+        }
+        findViewById<View>(R.id.tab_carrito)?.setOnClickListener {
+            startActivity(Intent(this, CarritoActivity::class.java))
+        }
+        findViewById<View>(R.id.tab_logout)?.setOnClickListener {
+            showLogoutDialog()
+        }
+        
+        // Cargar productos
+        cargarProductosCliente()
+    }
+    
+    private fun cargarProductosCliente() {
+        val recyclerDestacados = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_destacados)
+        val recyclerEsenciales = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.recycler_esenciales)
+        
+        if (recyclerDestacados == null || recyclerEsenciales == null) return
+        
+        // Adapters
+        val adapterDestacados = com.example.doloresapp.presentation.adapter.ProductoDestacadoAdapter(
+            onProductoClick = { producto ->
+                val intent = Intent(this, ProductoDetalleActivity::class.java)
+                intent.putExtra("PRODUCTO_ID", producto.id)
+                startActivity(intent)
+            },
+            onAgregarClick = { producto ->
+                agregarAlCarrito(producto)
+            }
+        )
+        
+        val adapterEsenciales = com.example.doloresapp.presentation.adapter.ProductoEsencialAdapter(
+            onProductoClick = { producto ->
+                val intent = Intent(this, ProductoDetalleActivity::class.java)
+                intent.putExtra("PRODUCTO_ID", producto.id)
+                startActivity(intent)
+            },
+            onAgregarClick = { producto ->
+                agregarAlCarrito(producto)
+            }
+        )
+        
+        recyclerDestacados.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(
+            this, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false
+        )
+        recyclerDestacados.adapter = adapterDestacados
+        
+        recyclerEsenciales.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+        recyclerEsenciales.adapter = adapterEsenciales
+        
+        // Cargar productos desde API
+        lifecycleScope.launch {
+            try {
+                val api = NetworkClient.createService(com.example.doloresapp.data.remote.service.ProductoApiService::class.java)
+                val productos = api.getAllProductos()
+                
+                // Primeros 5 para destacados
+                adapterDestacados.submitList(productos.take(5))
+                // Siguientes 5 para esenciales
+                adapterEsenciales.submitList(productos.drop(5).take(5))
+            } catch (e: Exception) {
+                // Silenciar error
+            }
+        }
+    }
+    
+    private fun agregarAlCarrito(producto: com.example.doloresapp.data.remote.dto.ProductoDTO) {
+        lifecycleScope.launch {
+            try {
+                val database = com.example.doloresapp.data.local.database.AppDatabase.getDatabase(this@HomeActivity)
+                val existente = database.carritoDao().getItemByProductoId(producto.id)
+                
+                if (existente != null) {
+                    database.carritoDao().updateItem(existente.copy(cantidad = existente.cantidad + 1))
+                } else {
+                    database.carritoDao().insertItem(
+                        com.example.doloresapp.data.local.entity.CarritoItem(
+                            productoId = producto.id,
+                            nombre = producto.nombre,
+                            precio = producto.precio,
+                            cantidad = 1,
+                            imagenUrl = producto.imagen_url
+                        )
+                    )
+                }
+                android.widget.Toast.makeText(this@HomeActivity, "✅ Agregado al carrito", android.widget.Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(this@HomeActivity, "Error al agregar", android.widget.Toast.LENGTH_SHORT).show()
+            }
         }
     }
     
@@ -139,33 +236,28 @@ class HomeActivity : AppCompatActivity() {
         val displayName = extractNameFromEmail(userEmail)
         
         tvBienvenida.text = "Hola, $displayName"
-        tvRol.text = "🚚 Repartidor"
+        tvRol.text = "Farmacia Dolores"
         
         // Botón logout
         findViewById<View>(R.id.btn_logout)?.setOnClickListener { showLogoutDialog() }
         
-        // Pedidos asignados - Ver lista de pedidos asignados al repartidor
-        findViewById<Button>(R.id.btn_pedidos_asignados)?.setOnClickListener {
+        // Cards del grid - Pedidos asignados
+        findViewById<View>(R.id.card_asignados)?.setOnClickListener {
             startActivity(Intent(this, PedidosAsignadosActivity::class.java))
         }
         
         // Entrega activa - Ver pedidos en camino
-        findViewById<Button>(R.id.btn_entrega_activa)?.setOnClickListener {
+        findViewById<View>(R.id.card_en_camino)?.setOnClickListener {
             val intent = Intent(this, PedidosAsignadosActivity::class.java)
             intent.putExtra("tab_inicial", 1) // Tab "En Camino"
             startActivity(intent)
         }
         
         // Historial de entregas
-        findViewById<Button>(R.id.btn_historial)?.setOnClickListener {
+        findViewById<View>(R.id.card_historial)?.setOnClickListener {
             val intent = Intent(this, PedidosAsignadosActivity::class.java)
             intent.putExtra("tab_inicial", 2) // Tab "Entregados"
             startActivity(intent)
-        }
-        
-        // Notificaciones
-        findViewById<Button>(R.id.btn_notificaciones)?.setOnClickListener {
-            startActivity(Intent(this, NotificacionesActivity::class.java))
         }
     }
     
@@ -181,44 +273,29 @@ class HomeActivity : AppCompatActivity() {
         val displayName = extractNameFromEmail(userEmail)
         
         tvBienvenida.text = "Hola, $displayName"
-        tvRol.text = "👨‍💼 Administrador"
+        tvRol.text = "Farmacia Dolores"
         
         // Botón logout
         findViewById<View>(R.id.btn_logout)?.setOnClickListener { showLogoutDialog() }
         
-        // Gestionar productos
-        findViewById<Button>(R.id.btn_productos).setOnClickListener {
-            startActivity(Intent(this, ProductosActivity::class.java))
+        // Cards del grid - Gestionar productos
+        findViewById<View>(R.id.card_productos)?.setOnClickListener {
+            startActivity(Intent(this, GestionProductosActivity::class.java))
         }
         
         // Ver pedidos
-        findViewById<Button>(R.id.btn_pedidos).setOnClickListener {
+        findViewById<View>(R.id.card_pedidos)?.setOnClickListener {
             startActivity(Intent(this, GestionPedidosActivity::class.java))
         }
         
         // Gestionar usuarios
-        findViewById<Button>(R.id.btn_usuarios).setOnClickListener {
+        findViewById<View>(R.id.card_usuarios)?.setOnClickListener {
             startActivity(Intent(this, GestionUsuariosActivity::class.java))
         }
         
         // Control de stock
-        findViewById<Button>(R.id.btn_stock).setOnClickListener {
+        findViewById<View>(R.id.card_stock)?.setOnClickListener {
             startActivity(Intent(this, GestionStockActivity::class.java))
-        }
-        
-        // Recetas pendientes
-        findViewById<Button>(R.id.btn_recetas).setOnClickListener {
-            startActivity(Intent(this, RecetaDigitalActivity::class.java))
-        }
-        
-        // Reportes (TODO)
-        findViewById<Button>(R.id.btn_reportes).setOnClickListener {
-            android.widget.Toast.makeText(this, "Próximamente: Reportes y estadísticas", android.widget.Toast.LENGTH_SHORT).show()
-        }
-        
-        // Notificaciones
-        findViewById<Button>(R.id.btn_notificaciones).setOnClickListener {
-            startActivity(Intent(this, NotificacionesActivity::class.java))
         }
     }
     
@@ -234,39 +311,29 @@ class HomeActivity : AppCompatActivity() {
         val displayName = extractNameFromEmail(userEmail)
         
         tvBienvenida.text = "Hola, $displayName"
-        tvRol.text = "💊 Farmacéutico"
+        tvRol.text = "Farmacia Dolores"
         
         // Botón logout
         findViewById<View>(R.id.btn_logout)?.setOnClickListener { showLogoutDialog() }
         
-        // Escanear QR de productos (solo ver detalle)
-        findViewById<Button>(R.id.btn_escanear_qr).setOnClickListener {
+        // Cards del grid - Venta presencial
+        findViewById<View>(R.id.card_venta)?.setOnClickListener {
             startActivity(Intent(this, VentaPresencialActivity::class.java))
         }
         
         // Validar recetas pendientes
-        findViewById<Button>(R.id.btn_validar_recetas).setOnClickListener {
-            startActivity(Intent(this, RecetaDigitalActivity::class.java))
+        findViewById<View>(R.id.card_recetas)?.setOnClickListener {
+            startActivity(Intent(this, RecetasPendientesActivity::class.java))
         }
         
         // Ver inventario de productos
-        findViewById<Button>(R.id.btn_ver_productos).setOnClickListener {
+        findViewById<View>(R.id.card_inventario)?.setOnClickListener {
             startActivity(Intent(this, ProductosActivity::class.java))
         }
         
         // Control de stock
-        findViewById<Button>(R.id.btn_stock).setOnClickListener {
+        findViewById<View>(R.id.card_stock)?.setOnClickListener {
             startActivity(Intent(this, GestionStockActivity::class.java))
-        }
-        
-        // Consultas de clientes (TODO)
-        findViewById<Button>(R.id.btn_consultas).setOnClickListener {
-            android.widget.Toast.makeText(this, "Próximamente: Consultas de clientes", android.widget.Toast.LENGTH_SHORT).show()
-        }
-        
-        // Notificaciones
-        findViewById<Button>(R.id.btn_notificaciones).setOnClickListener {
-            startActivity(Intent(this, NotificacionesActivity::class.java))
         }
     }
     

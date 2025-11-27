@@ -13,7 +13,6 @@ import com.example.doloresapp.data.local.entity.CarritoItem
 import com.example.doloresapp.data.remote.NetworkClient
 import com.example.doloresapp.data.remote.dto.ProductoDTO
 import com.example.doloresapp.data.remote.service.ProductoApiService
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.zxing.BarcodeFormat
@@ -34,158 +33,138 @@ class ProductoDetalleActivity : AppCompatActivity() {
         
         productoId = intent.getLongExtra("PRODUCTO_ID", 0)
         
-        // Toolbar
-        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Detalle del Producto"
-        
         apiService = NetworkClient.createService(ProductoApiService::class.java)
         database = AppDatabase.getDatabase(this)
         
+        setupUI()
         cargarProducto()
-        setupCantidadControls()
     }
     
-    private fun cargarProducto() {
-        val progressBar = findViewById<ProgressBar>(R.id.progressBar)
-        progressBar.visibility = View.VISIBLE
-        
-        lifecycleScope.launch {
-            try {
-                val producto = apiService.getProductoById(productoId)
-                
-                // Mostrar datos
-                findViewById<TextView>(R.id.tvNombre).text = producto.nombre
-                findViewById<TextView>(R.id.tvDescripcion).text = producto.descripcion
-                findViewById<TextView>(R.id.tvPrecio).text = "S/ ${producto.precio}"
-                findViewById<TextView>(R.id.tvStock).text = "Stock disponible: ${producto.stock}"
-                findViewById<TextView>(R.id.tvCategoria).text = "Categoría: ${producto.categoria?.nombre ?: "Sin categoría"}"
-                
-                // Imagen
-                Glide.with(this@ProductoDetalleActivity)
-                    .load(producto.imagen_url)
-                    .placeholder(R.drawable.ic_producto_placeholder)
-                    .into(findViewById(R.id.imgProducto))
-                
-                productoActual = producto
-                
-                // Mostrar QR del producto
-                // Primero intentar cargar la imagen del backend, si no existe, generar localmente
-                if (!producto.qrImageUrl.isNullOrEmpty()) {
-                    mostrarQRDesdeUrl(producto.qrImageUrl, producto.codigoBarras)
-                } else if (!producto.codigoBarras.isNullOrEmpty()) {
-                    mostrarQR(producto.codigoBarras)
-                }
-                
-                // Botón agregar al carrito
-                findViewById<MaterialButton>(R.id.btnAgregarCarrito).setOnClickListener {
-                    agregarAlCarrito()
-                }
-                
-                progressBar.visibility = View.GONE
-            } catch (e: Exception) {
-                progressBar.visibility = View.GONE
-                Toast.makeText(this@ProductoDetalleActivity, 
-                    "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+    private fun setupUI() {
+        // Botón volver
+        findViewById<View>(R.id.btnBack)?.setOnClickListener {
+            finish()
         }
-    }
-    
-    private fun setupCantidadControls() {
+        
+        // Botón favorito (solo visual por ahora)
+        findViewById<View>(R.id.btnFavorito)?.setOnClickListener {
+            Toast.makeText(this, "Agregado a favoritos", Toast.LENGTH_SHORT).show()
+        }
+        
+        // Controles de cantidad
         val tvCantidad = findViewById<TextView>(R.id.tvCantidad)
         val btnMenos = findViewById<ImageButton>(R.id.btnMenos)
         val btnMas = findViewById<ImageButton>(R.id.btnMas)
         
-        tvCantidad.text = cantidad.toString()
+        tvCantidad?.text = cantidad.toString()
         
-        btnMenos.setOnClickListener {
+        btnMenos?.setOnClickListener {
             if (cantidad > 1) {
                 cantidad--
-                tvCantidad.text = cantidad.toString()
+                tvCantidad?.text = cantidad.toString()
             }
         }
         
-        btnMas.setOnClickListener {
+        btnMas?.setOnClickListener {
             cantidad++
-            tvCantidad.text = cantidad.toString()
+            tvCantidad?.text = cantidad.toString()
+        }
+        
+        // Botón agregar al carrito
+        findViewById<MaterialButton>(R.id.btnAgregarCarrito)?.setOnClickListener {
+            agregarAlCarrito()
         }
     }
     
-    private fun agregarAlCarrito() {
-        val producto = productoActual ?: return
+    private fun cargarProducto() {
+        val progressBar = findViewById<ProgressBar>(R.id.progressBar)
+        progressBar?.visibility = View.VISIBLE
         
         lifecycleScope.launch {
             try {
-                val existente = database.carritoDao().getItemByProductoId(producto.id)
-                
-                if (existente != null) {
-                    // Actualizar cantidad
-                    database.carritoDao().updateItem(
-                        existente.copy(cantidad = existente.cantidad + cantidad)
-                    )
-                } else {
-                    // Agregar nuevo
-                    database.carritoDao().insertItem(
-                        CarritoItem(
-                            productoId = producto.id,
-                            nombre = producto.nombre,
-                            precio = producto.precio,
-                            cantidad = cantidad,
-                            imagenUrl = producto.imagen_url
-                        )
-                    )
-                }
-                
-                Toast.makeText(this@ProductoDetalleActivity, 
-                    "✅ Agregado al carrito: $cantidad unidad(es)", Toast.LENGTH_SHORT).show()
+                val producto = apiService.getProductoById(productoId)
+                productoActual = producto
+                mostrarProducto(producto)
+                progressBar?.visibility = View.GONE
             } catch (e: Exception) {
+                progressBar?.visibility = View.GONE
                 Toast.makeText(this@ProductoDetalleActivity, 
-                    "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    "Error al cargar producto", Toast.LENGTH_SHORT).show()
+                finish()
             }
         }
     }
     
-    private fun mostrarQRDesdeUrl(qrUrl: String, codigoBarras: String?) {
-        try {
-            val cardQR = findViewById<MaterialCardView>(R.id.cardQR)
-            val imgQR = findViewById<ImageView>(R.id.imgQR)
-            val tvCodigoBarras = findViewById<TextView>(R.id.tvCodigoBarras)
+    private fun mostrarProducto(producto: ProductoDTO) {
+        // Nombre
+        findViewById<TextView>(R.id.tvNombre)?.text = producto.nombre
+        
+        // Precio
+        findViewById<TextView>(R.id.tvPrecio)?.text = "S/ %.2f".format(producto.precio)
+        
+        // Categoría
+        findViewById<TextView>(R.id.tvCategoria)?.text = 
+            producto.categoria?.nombre?.uppercase() ?: "MEDICAMENTO"
+        
+        // Descripción
+        findViewById<TextView>(R.id.tvDescripcion)?.text = 
+            producto.descripcion ?: "Producto de alta calidad para el cuidado de tu salud."
+        
+        // Stock
+        findViewById<TextView>(R.id.tvStock)?.text = "• Stock: ${producto.stock} unidades"
+        
+        // Rating (simulado)
+        findViewById<TextView>(R.id.tvRating)?.text = "4.8"
+        
+        // Badge de receta
+        val tvReceta = findViewById<TextView>(R.id.tvRequiereReceta)
+        tvReceta?.visibility = if (producto.requerireReceta == true) View.VISIBLE else View.GONE
+        
+        // Imagen
+        val imgProducto = findViewById<ImageView>(R.id.imgProducto)
+        if (!producto.imagen_url.isNullOrEmpty()) {
+            Glide.with(this)
+                .load(producto.imagen_url)
+                .placeholder(R.drawable.ic_medication)
+                .error(R.drawable.ic_medication)
+                .into(imgProducto)
+        } else {
+            imgProducto?.setImageResource(R.drawable.ic_medication)
+            imgProducto?.setColorFilter(getColor(R.color.primary))
+            imgProducto?.setPadding(80, 80, 80, 80)
+        }
+        
+        // QR Code
+        if (!producto.qrImageUrl.isNullOrEmpty() || !producto.codigoBarras.isNullOrEmpty()) {
+            mostrarQR(producto)
+        }
+    }
+    
+    private fun mostrarQR(producto: ProductoDTO) {
+        val cardQR = findViewById<MaterialCardView>(R.id.cardQR)
+        val imgQR = findViewById<ImageView>(R.id.imgQR)
+        val tvCodigo = findViewById<TextView>(R.id.tvCodigoBarras)
+        
+        if (!producto.qrImageUrl.isNullOrEmpty()) {
+            // Cargar QR desde URL
+            val fullUrl = if (producto.qrImageUrl.startsWith("http")) producto.qrImageUrl
+                else com.example.doloresapp.utils.Constants.BASE_URL.trimEnd('/') + producto.qrImageUrl
             
-            // Construir URL completa si es relativa
-            val fullUrl = if (qrUrl.startsWith("http")) qrUrl 
-                else com.example.doloresapp.utils.Constants.BASE_URL.trimEnd('/') + qrUrl
-            
-            // Cargar imagen del backend
             Glide.with(this)
                 .load(fullUrl)
                 .placeholder(R.drawable.ic_producto_placeholder)
-                .into(imgQR)
+                .into(imgQR!!)
             
-            tvCodigoBarras.text = "Código: ${codigoBarras ?: "N/A"}"
-            cardQR.visibility = View.VISIBLE
-        } catch (e: Exception) {
-            // Si falla, intentar generar localmente
-            codigoBarras?.let { mostrarQR(it) }
-        }
-    }
-    
-    private fun mostrarQR(codigoBarras: String) {
-        try {
-            val cardQR = findViewById<MaterialCardView>(R.id.cardQR)
-            val imgQR = findViewById<ImageView>(R.id.imgQR)
-            val tvCodigoBarras = findViewById<TextView>(R.id.tvCodigoBarras)
-            
+            tvCodigo?.text = "Código: ${producto.codigoBarras ?: "N/A"}"
+            cardQR?.visibility = View.VISIBLE
+        } else if (!producto.codigoBarras.isNullOrEmpty()) {
             // Generar QR localmente
-            val qrBitmap = generarQRCode(codigoBarras, 300)
-            
+            val qrBitmap = generarQRCode(producto.codigoBarras, 300)
             if (qrBitmap != null) {
-                imgQR.setImageBitmap(qrBitmap)
-                tvCodigoBarras.text = "Código: $codigoBarras"
-                cardQR.visibility = View.VISIBLE
+                imgQR?.setImageBitmap(qrBitmap)
+                tvCodigo?.text = "Código: ${producto.codigoBarras}"
+                cardQR?.visibility = View.VISIBLE
             }
-        } catch (e: Exception) {
-            // Si falla, simplemente no mostrar el QR
         }
     }
     
@@ -208,8 +187,44 @@ class ProductoDetalleActivity : AppCompatActivity() {
         }
     }
     
-    override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
-        return true
+    private fun agregarAlCarrito() {
+        val producto = productoActual ?: return
+        
+        // Verificar si requiere receta
+        if (producto.requerireReceta == true) {
+            Toast.makeText(this, 
+                "⚠️ Este producto requiere receta médica", 
+                Toast.LENGTH_LONG).show()
+        }
+        
+        lifecycleScope.launch {
+            try {
+                val existente = database.carritoDao().getItemByProductoId(producto.id)
+                
+                if (existente != null) {
+                    database.carritoDao().updateItem(
+                        existente.copy(cantidad = existente.cantidad + cantidad)
+                    )
+                } else {
+                    database.carritoDao().insertItem(
+                        CarritoItem(
+                            productoId = producto.id,
+                            nombre = producto.nombre,
+                            precio = producto.precio,
+                            cantidad = cantidad,
+                            imagenUrl = producto.imagen_url
+                        )
+                    )
+                }
+                
+                Toast.makeText(this@ProductoDetalleActivity, 
+                    "✅ Agregado al carrito: $cantidad unidad(es)", 
+                    Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(this@ProductoDetalleActivity, 
+                    "Error al agregar al carrito", 
+                    Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

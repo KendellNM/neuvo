@@ -97,6 +97,18 @@
             android:name=".presentation.ui.VentaPresencialActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".presentation.ui.GestionProductosActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.ui.EnviarRecetaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.ui.RecetasPendientesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentation.ui.ProcesarRecetaActivity"
+            android:exported="false" />
             
         <!-- OSMDroid no requiere API Key - 100% GRATIS -->
             
