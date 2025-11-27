@@ -460,27 +460,50 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void createPedidos() {
-        String[] estados = {"PENDIENTE", "EN_PREPARACION", "LISTO", "EN_CAMINO", "ENTREGADO", "CANCELADO"};
-        String[] metodosPago = {"EFECTIVO", "TARJETA", "TRANSFERENCIA", "YAPE", "PLIN"};
+        String[] estados = {"PENDIENTE", "EN_PREPARACION", "LISTO", "ASIGNADO", "EN_CAMINO", "ENTREGADO"};
+        String[] metodosPago = {"EFECTIVO", "TARJETA", "YAPE", "PLIN"};
+        String[] observaciones = {
+            "Entregar en portería", "Llamar al llegar", "Dejar con el vecino",
+            "Tocar timbre 2 veces", "Urgente", "Entregar antes de las 6pm",
+            "Cliente frecuente", "Pago exacto", null, null
+        };
 
         for (int i = 0; i < 25; i++) {
             String estado = estados[random.nextInt(estados.length)];
             String metodoPago = metodosPago[random.nextInt(metodosPago.length)];
-            BigDecimal total = new BigDecimal(20 + random.nextDouble() * 180); // Entre 20 y 200
+            BigDecimal total = new BigDecimal(20 + random.nextDouble() * 180);
             total = total.setScale(2, BigDecimal.ROUND_HALF_UP);
             
             Clientes cliente = clientes.get(random.nextInt(clientes.size()));
             Direcciones direccion = cliente.getDireccioness().isEmpty() ? null : 
                                    cliente.getDireccioness().iterator().next();
             
-            Long pedidoId = (i == 0) ? 123L : (long)(i + 1); // El primer pedido es el 123 para WebSocket
-            if (i == 0) estado = "EN_CAMINO"; // Asegurar que el pedido 123 esté en camino
+            Long pedidoId = (i == 0) ? 123L : (long)(i + 1);
+            if (i == 0) estado = "EN_CAMINO";
             
             Pedidos pedido = createPedido(pedidoId, estado, total, metodoPago, cliente, direccion);
+            
+            // Asignar repartidor a pedidos ASIGNADO, EN_CAMINO o ENTREGADO
+            if (estado.equals("ASIGNADO") || estado.equals("EN_CAMINO") || estado.equals("ENTREGADO")) {
+                if (!repartidores.isEmpty()) {
+                    Repartidores repartidor = repartidores.get(random.nextInt(repartidores.size()));
+                    pedido.setRepartidores(repartidor);
+                }
+            }
+            
+            // Agregar observaciones aleatorias
+            String obs = observaciones[random.nextInt(observaciones.length)];
+            if (obs != null) {
+                pedido.setObservaciones(obs);
+            }
+            
+            // Generar número de pedido descriptivo
+            pedido.setNumeroPedido(1000 + i);
+            
             pedidos.add(pedido);
             
-            // Crear detalles del pedido (1-4 productos por pedido)
-            int numProductos = 1 + random.nextInt(4);
+            // Crear detalles del pedido (1-3 productos)
+            int numProductos = 1 + random.nextInt(3);
             BigDecimal totalCalculado = BigDecimal.ZERO;
             
             for (int j = 0; j < numProductos; j++) {
@@ -493,7 +516,6 @@ public class DataSeeder implements CommandLineRunner {
                 createPedidoDetalle((long)(i * 10 + j + 1), cantidad, precioUnitario, subtotal, pedido, producto);
             }
             
-            // Actualizar el total real del pedido
             pedido.setTotal(totalCalculado.doubleValue());
             pedidosRepository.save(pedido);
         }

@@ -264,7 +264,10 @@ class EnviarRecetaActivity : AppCompatActivity() {
                             Toast.LENGTH_LONG
                         ).show()
 
-                        // Limpiar formulario después de 2 segundos
+                        // Devolver resultado OK si viene desde checkout
+                        setResult(RESULT_OK)
+                        
+                        // Cerrar después de 2 segundos
                         btnEnviarReceta.postDelayed({
                             finish()
                         }, 2000)

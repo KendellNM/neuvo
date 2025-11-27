@@ -1,6 +1,7 @@
 package com.example.doloresapp.presentation.ui
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.os.Bundle
@@ -23,6 +24,8 @@ import com.example.doloresapp.data.remote.dto.PedidoDetalleRequest
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -36,8 +39,18 @@ class CheckoutActivity : AppCompatActivity() {
     private lateinit var etTelefono: TextInputEditText
     private lateinit var etNotas: TextInputEditText
     private lateinit var btnConfirmar: Button
-    private lateinit var btnSeleccionarDireccion: Button
-    private lateinit var btnUsarUbicacion: Button
+    private lateinit var btnSeleccionarDireccion: MaterialButton
+    private lateinit var btnUsarUbicacion: MaterialButton
+    
+    // Nuevos elementos para receta y tipo de entrega
+    private var cardRecetaRequerida: MaterialCardView? = null
+    private var btnSubirReceta: MaterialButton? = null
+    private var btnLlevarReceta: MaterialButton? = null
+    private var layoutRecetaEstado: View? = null
+    private var tvRecetaEstado: TextView? = null
+    private var btnDelivery: MaterialCardView? = null
+    private var btnRecojo: MaterialCardView? = null
+    private var layoutDireccion: MaterialCardView? = null
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var direccionesCliente: List<DireccionResponse> = emptyList()
@@ -48,6 +61,7 @@ class CheckoutActivity : AppCompatActivity() {
 
     companion object {
         private const val LOCATION_PERMISSION_CODE = 1001
+        private const val REQUEST_ENVIAR_RECETA = 100
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,23 +77,32 @@ class CheckoutActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = "Confirmar Pedido"
 
-        // Views
+        // Views básicos
         tvResumen = findViewById(R.id.tvResumen)
         tvTotal = findViewById(R.id.tvTotal)
         etDireccion = findViewById(R.id.etDireccion)
         etTelefono = findViewById(R.id.etTelefono)
         etNotas = findViewById(R.id.etNotas)
         btnConfirmar = findViewById(R.id.btnConfirmar)
+        btnSeleccionarDireccion = findViewById(R.id.btnSeleccionarDireccion)
+        btnUsarUbicacion = findViewById(R.id.btnUsarUbicacion)
+        
+        // Nuevos elementos
+        cardRecetaRequerida = findViewById(R.id.cardRecetaRequerida)
+        btnSubirReceta = findViewById(R.id.btnSubirReceta)
+        btnLlevarReceta = findViewById(R.id.btnLlevarReceta)
+        layoutRecetaEstado = findViewById(R.id.layoutRecetaEstado)
+        tvRecetaEstado = findViewById(R.id.tvRecetaEstado)
+        btnDelivery = findViewById(R.id.btnDelivery)
+        btnRecojo = findViewById(R.id.btnRecojo)
+        layoutDireccion = findViewById(R.id.layoutDireccion)
 
-        // Botones opcionales (pueden no existir en el layout)
-        btnSeleccionarDireccion = findViewById(R.id.btnSeleccionarDireccion) 
-            ?: Button(this).also { it.visibility = View.GONE }
-        btnUsarUbicacion = findViewById(R.id.btnUsarUbicacion) 
-            ?: Button(this).also { it.visibility = View.GONE }
-
+        setupListeners()
         cargarResumen()
         cargarClienteYDirecciones()
-
+    }
+    
+    private fun setupListeners() {
         btnSeleccionarDireccion.setOnClickListener {
             mostrarDialogoDirecciones()
         }
@@ -90,6 +113,32 @@ class CheckoutActivity : AppCompatActivity() {
 
         btnConfirmar.setOnClickListener {
             confirmarPedido()
+        }
+        
+        // Listeners para receta
+        btnSubirReceta?.setOnClickListener {
+            val intent = Intent(this, EnviarRecetaActivity::class.java)
+            intent.putExtra("desde_checkout", true)
+            startActivityForResult(intent, REQUEST_ENVIAR_RECETA)
+        }
+        
+        btnLlevarReceta?.setOnClickListener {
+            tipoEntrega = "RECOJO"
+            actualizarVistaEntrega()
+            layoutRecetaEstado?.visibility = View.VISIBLE
+            tvRecetaEstado?.text = "Deberás presentar tu receta física al recoger"
+            Toast.makeText(this, "Deberás presentar tu receta al recoger el pedido", Toast.LENGTH_LONG).show()
+        }
+        
+        // Listeners para tipo de entrega
+        btnDelivery?.setOnClickListener {
+            tipoEntrega = "DELIVERY"
+            actualizarVistaEntrega()
+        }
+        
+        btnRecojo?.setOnClickListener {
+            tipoEntrega = "RECOJO"
+            actualizarVistaEntrega()
         }
     }
 
@@ -205,6 +254,10 @@ class CheckoutActivity : AppCompatActivity() {
         }
     }
 
+    private var requiereReceta = false
+    private var tipoEntrega = "DELIVERY" // DELIVERY o RECOJO
+    private var recetaEnviada = false
+    
     private fun cargarResumen() {
         lifecycleScope.launch {
             val items = database.carritoDao().getAllItemsList()
@@ -217,6 +270,65 @@ class CheckoutActivity : AppCompatActivity() {
 
             tvResumen.text = resumen.toString()
             tvTotal.text = "Total: S/ %.2f".format(total)
+            
+            // Verificar si algún producto requiere receta
+            verificarProductosConReceta(items.map { it.productoId })
+        }
+    }
+    
+    private fun verificarProductosConReceta(productoIds: List<Long>) {
+        lifecycleScope.launch {
+            try {
+                val api = NetworkClient.createService(com.example.doloresapp.data.remote.service.ProductoApiService::class.java)
+                val productos = api.getAllProductos()
+                
+                val productosEnCarrito = productos.filter { it.id in productoIds }
+                requiereReceta = productosEnCarrito.any { it.requerireReceta == true }
+                
+                runOnUiThread {
+                    if (requiereReceta) {
+                        cardRecetaRequerida?.visibility = View.VISIBLE
+                    } else {
+                        cardRecetaRequerida?.visibility = View.GONE
+                    }
+                    actualizarVistaEntrega()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+    
+    private fun actualizarVistaEntrega() {
+        if (tipoEntrega == "DELIVERY") {
+            // Estilo seleccionado para Delivery
+            btnDelivery?.strokeColor = getColor(R.color.primary)
+            btnDelivery?.strokeWidth = 2
+            btnRecojo?.strokeColor = getColor(android.R.color.darker_gray)
+            btnRecojo?.strokeWidth = 1
+            
+            layoutDireccion?.visibility = View.VISIBLE
+            etDireccion.setText("")
+            etDireccion.hint = "Ingresa tu dirección de entrega"
+        } else {
+            // Estilo seleccionado para Recojo
+            btnRecojo?.strokeColor = getColor(R.color.primary)
+            btnRecojo?.strokeWidth = 2
+            btnDelivery?.strokeColor = getColor(android.R.color.darker_gray)
+            btnDelivery?.strokeWidth = 1
+            
+            layoutDireccion?.visibility = View.GONE
+            etDireccion.setText("Recoger en tienda - Farmacia Dolores")
+        }
+    }
+    
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_ENVIAR_RECETA && resultCode == RESULT_OK) {
+            recetaEnviada = true
+            layoutRecetaEstado?.visibility = View.VISIBLE
+            tvRecetaEstado?.text = "✅ Receta enviada. El farmacéutico la revisará."
+            Toast.makeText(this, "✅ Receta enviada correctamente", Toast.LENGTH_LONG).show()
         }
     }
 

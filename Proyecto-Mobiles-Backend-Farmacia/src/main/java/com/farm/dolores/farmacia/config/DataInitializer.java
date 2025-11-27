@@ -311,44 +311,44 @@ public class DataInitializer implements CommandLineRunner {
         // Medicamentos - URLs de imágenes de medicamentos reales
         crearProducto("7501234567890", "Paracetamol 500mg", "Analgésico y antipirético", 
             "Paracetamol", "500mg", false, 8.50, 50, medicamentos, fechaVenc,
-            "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400");
+            "https://drotafarma.com.ve/wp-content/uploads/2024/04/Paracetamol-500mg-1.png");
         crearProducto("7501234567891", "Ibuprofeno 400mg", "Antiinflamatorio no esteroideo", 
             "Ibuprofeno", "400mg", false, 12.00, 40, medicamentos, fechaVenc,
-            "https://images.unsplash.com/photo-1550572017-edd951aa8f72?w=400");
+            "https://www.farmaciaslider.pe/my-assets/image/product/00011975.png");
         crearProducto("7501234567892", "Amoxicilina 500mg", "Antibiótico de amplio espectro", 
             "Amoxicilina", "500mg", true, 25.00, 30, medicamentos, fechaVenc,
-            "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400");
+            "https://boticaportugal.com/cdn/shop/products/9342003180.png?v=1648745322");
         crearProducto("7501234567893", "Omeprazol 20mg", "Protector gástrico", 
             "Omeprazol", "20mg", false, 15.00, 45, medicamentos, fechaVenc,
-            "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400");
+            "https://bonapharm.com/wp-content/uploads/2023/03/NORPRAZOLE.png");
         crearProducto("7501234567894", "Loratadina 10mg", "Antihistamínico", 
             "Loratadina", "10mg", false, 10.00, 60, medicamentos, fechaVenc,
-            "https://images.unsplash.com/photo-1585435557343-3b092031a831?w=400");
+            "https://www.farmaciasperu.pe/wp-content/uploads/2023/12/LORADATADINA-10-MG.webp");
 
         // Vitaminas
         crearProducto("7502234567890", "Vitamina C 1000mg", "Suplemento vitamínico", 
             "Ácido Ascórbico", "1000mg", false, 18.00, 80, vitaminas, fechaVenc,
-            "https://images.unsplash.com/photo-1616671276441-2f2c277b8bf6?w=400");
+            "https://www.naturalcenter.pe/wp-content/uploads/2023/03/vitamin_c_1000mg.png");
         crearProducto("7502234567891", "Vitamina D3 2000UI", "Suplemento de vitamina D", 
             "Colecalciferol", "2000UI", false, 22.00, 55, vitaminas, fechaVenc,
-            "https://images.unsplash.com/photo-1577401239170-897942555fb3?w=400");
+            "https://gloryfeel.es/cdn/shop/files/ES-vitamin-D3-2000-front_1400x.png?v=1707318160");
         crearProducto("7502234567892", "Complejo B", "Vitaminas del complejo B", 
             "Complejo B", "N/A", false, 20.00, 70, vitaminas, fechaVenc,
-            "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=400");
+            "https://biomont.com.pe/wp-content/uploads/2024/10/complejob_nf_1kg.webp");
         crearProducto("7502234567893", "Omega 3", "Ácidos grasos esenciales", 
             "EPA/DHA", "1000mg", false, 35.00, 40, vitaminas, fechaVenc,
-            "https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?w=400");
+            "https://www.google.com/url?sa=i&url=https%3A%2F%2Fnordicnaturalsperu.com%2Fproducts%2Fultimate-omega-liquido-2840-mg%3Fsrsltid%3DAfmBOopZVZVrRHIKYGWv8rowRMjSKFJrmU7RdRvpyFNcbL4rlscWKMcd&psig=AOvVaw3wjOXsB7kv9x-vs4VS6JO6&ust=1764314186891000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCMCCstXkkZEDFQAAAAAdAAAAABAj");
 
         // Cuidado Personal
         crearProducto("7503234567890", "Alcohol en Gel 500ml", "Desinfectante de manos", 
             "Alcohol", "70%", false, 12.00, 100, cuidado, fechaVenc,
-            "https://images.unsplash.com/photo-1584483766114-2cea6facdf57?w=400");
+            "https://dojiw2m9tvv09.cloudfront.net/53108/product/07f09a19-45f1-4e92-bd79-1703b8e853296263.png");
         crearProducto("7503234567891", "Protector Solar SPF50", "Protección solar alta", 
             "Filtros UV", "SPF50", false, 45.00, 35, cuidado, fechaVenc,
-            "https://images.unsplash.com/photo-1556227702-d1e4e7b5c232?w=400");
+            "https://www.bioderma.pe/sites/pe/files/styles/product_packshot_slider/public/products/%7B158446%7D_%7BBIO_PHOTODERM_AR_SPF50_V2_RELAUNCH%7D_%7B28565W%7D.png?itok=otrxUSme");
         crearProducto("7503234567892", "Crema Hidratante", "Hidratación facial", 
             "Ácido Hialurónico", "N/A", false, 38.00, 25, cuidado, fechaVenc,
-            "https://images.unsplash.com/photo-1570194065650-d99fb4b38b15?w=400");
+            "https://img.nivea.com/-/media/miscellaneous/media-center-items/0/3/0/09e6f17916ec456098784e83b88b1bff-web_1010x1180_transparent_png.png");
 
         log.info("✓ Productos de prueba creados exitosamente");
     }

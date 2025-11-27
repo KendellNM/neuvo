@@ -1,8 +1,6 @@
 package com.example.doloresapp.data.remote.api
 
-import com.example.doloresapp.data.remote.dto.CrearPedidoPresencialRequest
-import com.example.doloresapp.data.remote.dto.CrearPedidoRequest
-import com.example.doloresapp.data.remote.dto.PedidoDTO
+import com.example.doloresapp.data.remote.dto.*
 import retrofit2.Response
 import retrofit2.http.*
 

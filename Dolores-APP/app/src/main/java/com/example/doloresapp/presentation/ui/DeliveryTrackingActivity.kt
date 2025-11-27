@@ -95,9 +95,43 @@ class DeliveryTrackingActivity : AppCompatActivity() {
         tvConnection = findViewById(R.id.tvConnection)
         progressBar = findViewById(R.id.progressBar)
         
-        // Valores por defecto
-        tvTiempo?.text = "15-20"
-        tvRepartidorNombre?.text = "Carlos M."
+        // Valores por defecto - se actualizará con tiempo real
+        tvTiempo?.text = "..."
+        tvRepartidorNombre?.text = "Repartidor"
+        
+        // Cargar info del repartidor y calcular tiempo inicial
+        cargarInfoPedido()
+    }
+    
+    private fun cargarInfoPedido() {
+        lifecycleScope.launch {
+            try {
+                // Calcular tiempo estimado inicial basado en distancia
+                destinoGeoPoint?.let { destino ->
+                    // Usar ubicación por defecto de la farmacia como origen inicial
+                    val origenFarmacia = GeoPoint(-12.0464, -77.0428)
+                    
+                    val results = FloatArray(1)
+                    android.location.Location.distanceBetween(
+                        origenFarmacia.latitude, origenFarmacia.longitude,
+                        destino.latitude, destino.longitude,
+                        results
+                    )
+                    val distanciaKm = results[0] / 1000
+                    
+                    // Estimar tiempo: ~3 min por km en ciudad (tráfico moderado)
+                    val tiempoEstimado = (distanciaKm * 3).toInt().coerceAtLeast(5)
+                    
+                    runOnUiThread {
+                        tvTiempo?.text = "$tiempoEstimado-${tiempoEstimado + 5}"
+                    }
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    tvTiempo?.text = "10-15"
+                }
+            }
+        }
     }
     
     private fun setupClickListeners() {

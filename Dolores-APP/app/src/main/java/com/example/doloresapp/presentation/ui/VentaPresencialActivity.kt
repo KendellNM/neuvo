@@ -20,6 +20,7 @@ import com.example.doloresapp.data.remote.api.QRApiService
 import com.example.doloresapp.data.remote.api.PedidoApiService
 import com.example.doloresapp.data.remote.dto.CrearPedidoPresencialRequest
 import com.example.doloresapp.data.remote.dto.DetallePedidoRequest
+import com.example.doloresapp.data.remote.dto.PedidoDTO
 import com.example.doloresapp.di.ServiceLocator
 import com.example.doloresapp.domain.model.ItemVenta
 import com.example.doloresapp.domain.model.toDomain

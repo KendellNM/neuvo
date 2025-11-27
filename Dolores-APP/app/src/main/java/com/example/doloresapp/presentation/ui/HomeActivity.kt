@@ -259,6 +259,41 @@ class HomeActivity : AppCompatActivity() {
             intent.putExtra("tab_inicial", 2) // Tab "Entregados"
             startActivity(intent)
         }
+        
+        // Cargar contadores de pedidos
+        cargarContadoresRepartidor()
+    }
+    
+    private fun cargarContadoresRepartidor() {
+        val tvAsignados = findViewById<TextView>(R.id.tv_count_asignados)
+        val tvEnCamino = findViewById<TextView>(R.id.tv_count_en_camino)
+        val tvEntregados = findViewById<TextView>(R.id.tv_count_entregados)
+        
+        lifecycleScope.launch {
+            try {
+                val userApi = NetworkClient.createService(UserApi::class.java)
+                val currentUser = userApi.getCurrentUser()
+                val repartidorId = currentUser.repartidorId
+                
+                if (repartidorId != null) {
+                    val pedidosApi = NetworkClient.createService(com.example.doloresapp.data.remote.PedidosApi::class.java)
+                    val pedidos = pedidosApi.getPedidosByRepartidor(repartidorId)
+                    
+                    val asignados = pedidos.count { it.estado?.uppercase() == "ASIGNADO" }
+                    val enCamino = pedidos.count { it.estado?.uppercase() == "EN_CAMINO" }
+                    val entregados = pedidos.count { it.estado?.uppercase() == "ENTREGADO" }
+                    
+                    runOnUiThread {
+                        tvAsignados?.text = asignados.toString()
+                        tvEnCamino?.text = enCamino.toString()
+                        tvEntregados?.text = entregados.toString()
+                    }
+                }
+            } catch (e: Exception) {
+                // Si falla, mantener los valores en 0
+                e.printStackTrace()
+            }
+        }
     }
     
     private fun setupAdminUI() {
@@ -296,6 +331,48 @@ class HomeActivity : AppCompatActivity() {
         // Control de stock
         findViewById<View>(R.id.card_stock)?.setOnClickListener {
             startActivity(Intent(this, GestionStockActivity::class.java))
+        }
+        
+        // Cargar contadores
+        cargarContadoresAdmin()
+    }
+    
+    private fun cargarContadoresAdmin() {
+        val tvProductos = findViewById<TextView>(R.id.tv_count_productos)
+        val tvPedidos = findViewById<TextView>(R.id.tv_count_pedidos)
+        val tvUsuarios = findViewById<TextView>(R.id.tv_count_usuarios)
+        val tvStockBajo = findViewById<TextView>(R.id.tv_count_stock_bajo)
+        
+        lifecycleScope.launch {
+            try {
+                val productosApi = NetworkClient.createService(com.example.doloresapp.data.remote.service.ProductoApiService::class.java)
+                val productos = productosApi.getAllProductos()
+                val stockBajo = productos.count { (it.stock ?: 0) < (it.stockMin ?: 10) }
+                
+                runOnUiThread {
+                    tvProductos?.text = productos.size.toString()
+                    tvStockBajo?.text = stockBajo.toString()
+                }
+            } catch (e: Exception) { e.printStackTrace() }
+            
+            try {
+                val pedidosApi = NetworkClient.createService(com.example.doloresapp.data.remote.PedidosApi::class.java)
+                val pedidos = pedidosApi.getAllPedidos()
+                val pendientes = pedidos.count { it.estado?.uppercase() in listOf("PENDIENTE", "EN_PREPARACION", "LISTO") }
+                
+                runOnUiThread {
+                    tvPedidos?.text = pendientes.toString()
+                }
+            } catch (e: Exception) { e.printStackTrace() }
+            
+            try {
+                val adminApi = NetworkClient.createService(com.example.doloresapp.data.remote.AdminApi::class.java)
+                val usuarios = adminApi.getAllUsuarios()
+                
+                runOnUiThread {
+                    tvUsuarios?.text = usuarios.size.toString()
+                }
+            } catch (e: Exception) { e.printStackTrace() }
         }
     }
     
@@ -335,6 +412,40 @@ class HomeActivity : AppCompatActivity() {
         findViewById<View>(R.id.card_stock)?.setOnClickListener {
             startActivity(Intent(this, GestionStockActivity::class.java))
         }
+        
+        // Cargar contadores
+        cargarContadoresFarmaceutico()
+    }
+    
+    private fun cargarContadoresFarmaceutico() {
+        val tvRecetas = findViewById<TextView>(R.id.tv_count_recetas)
+        val badgeRecetas = findViewById<TextView>(R.id.badge_recetas)
+        
+        lifecycleScope.launch {
+            try {
+                val recetasApi = NetworkClient.createService(com.example.doloresapp.data.remote.RecetasDigitalesApi::class.java)
+                val response = recetasApi.getRecetasPendientes()
+                
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val recetas = response.body()?.data ?: emptyList()
+                    val count = recetas.size
+                    
+                    runOnUiThread {
+                        tvRecetas?.text = count.toString()
+                        
+                        // Mostrar badge si hay recetas pendientes
+                        if (count > 0) {
+                            badgeRecetas?.visibility = View.VISIBLE
+                            badgeRecetas?.text = if (count > 9) "9+" else count.toString()
+                        } else {
+                            badgeRecetas?.visibility = View.GONE
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
     
     private fun setupEdgeToEdge(rootViewId: Int) {
@@ -355,10 +466,12 @@ class HomeActivity : AppCompatActivity() {
     }
     
     private fun showLogoutDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("Cerrar Sesión")
-            .setMessage("¿Estás seguro que deseas cerrar sesión?")
-            .setPositiveButton("Sí") { _, _ -> logout() }
+        val dialogView = layoutInflater.inflate(android.R.layout.simple_list_item_1, null)
+        
+        AlertDialog.Builder(this, com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog)
+            .setTitle("👋 ¿Cerrar sesión?")
+            .setMessage("Volverás a la pantalla de inicio de sesión")
+            .setPositiveButton("Cerrar sesión") { _, _ -> logout() }
             .setNegativeButton("Cancelar", null)
             .show()
     }

@@ -98,11 +98,14 @@
                             android:padding="12dp"
                             android:background="?attr/selectableItemBackground">
 
-                            <ImageView
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
-                                android:src="@drawable/ic_delivery"
-                                app:tint="@color/primary" />
+                            <TextView
+                                android:id="@+id/tv_count_asignados"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="28sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/primary" />
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -111,7 +114,7 @@
                                 android:textSize="14sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/text_primary"
-                                android:layout_marginTop="8dp" />
+                                android:layout_marginTop="4dp" />
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -139,11 +142,14 @@
                             android:padding="12dp"
                             android:background="?attr/selectableItemBackground">
 
-                            <ImageView
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
-                                android:src="@drawable/ic_location"
-                                app:tint="@color/secondary" />
+                            <TextView
+                                android:id="@+id/tv_count_en_camino"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="28sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/secondary" />
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -152,7 +158,7 @@
                                 android:textSize="14sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/text_primary"
-                                android:layout_marginTop="8dp" />
+                                android:layout_marginTop="4dp" />
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -181,11 +187,14 @@
                             android:padding="12dp"
                             android:background="?attr/selectableItemBackground">
 
-                            <ImageView
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
-                                android:src="@drawable/ic_note"
-                                app:tint="#9C27B0" />
+                            <TextView
+                                android:id="@+id/tv_count_entregados"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textSize="28sp"
+                                android:textStyle="bold"
+                                android:textColor="#9C27B0" />
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -194,7 +203,7 @@
                                 android:textSize="14sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/text_primary"
-                                android:layout_marginTop="8dp" />
+                                android:layout_marginTop="4dp" />
 
                             <TextView
                                 android:layout_width="wrap_content"
