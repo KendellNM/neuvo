@@ -363,8 +363,8 @@ class CheckoutActivity : AppCompatActivity() {
                     }
                 }
                 
-                if (clienteId == null) {
-                    // Intentar desde el endpoint /me
+                if (clienteId == null && com.example.doloresapp.utils.NetworkUtils.isNetworkAvailable(this@CheckoutActivity)) {
+                    // Intentar desde el endpoint /me solo si hay conexión
                     try {
                         val userApi = NetworkClient.createService(com.example.doloresapp.data.remote.UserApi::class.java)
                         val currentUser = userApi.getCurrentUser()
@@ -395,44 +395,113 @@ class CheckoutActivity : AppCompatActivity() {
                         precioUnitario = item.precio
                     )
                 }
+                
+                val total = items.sumOf { it.subtotal }
 
-                val request = CrearPedidoRequest(
-                    clienteId = clienteId!!,
-                    direccionId = direccionSeleccionada?.idDirecciones,
-                    direccionEntrega = direccion,
-                    telefono = telefono,
-                    notas = notas,
-                    metodoPago = "EFECTIVO",
-                    latitud = latitudSeleccionada,
-                    longitud = longitudSeleccionada,
-                    detalles = detalles
-                )
-
-                val api = NetworkClient.createService(PedidoApiService::class.java)
-                val response = api.crearPedido(request)
-
-                // Limpiar carrito
-                database.carritoDao().clearCarrito()
-
-                // Mostrar éxito
-                AlertDialog.Builder(this@CheckoutActivity)
-                    .setTitle("✅ Pedido Confirmado")
-                    .setMessage("Tu pedido #${response.id} ha sido creado exitosamente.\n\nEstado: ${response.estado}")
-                    .setPositiveButton("Ver Mis Pedidos") { _, _ ->
-                        startActivity(android.content.Intent(this@CheckoutActivity, MisPedidosActivity::class.java))
-                        finish()
-                    }
-                    .setNegativeButton("Volver al Inicio") { _, _ ->
-                        startActivity(android.content.Intent(this@CheckoutActivity, HomeActivity::class.java))
-                        finishAffinity()
-                    }
-                    .setCancelable(false)
-                    .show()
+                // Verificar si hay conexión a internet
+                if (com.example.doloresapp.utils.NetworkUtils.isNetworkAvailable(this@CheckoutActivity)) {
+                    // CON INTERNET: Enviar pedido al servidor
+                    enviarPedidoOnline(direccion, telefono, notas, detalles)
+                } else {
+                    // SIN INTERNET: Guardar pedido localmente para sincronizar después
+                    guardarPedidoOffline(direccion, telefono, notas, detalles, total)
+                }
 
             } catch (e: Exception) {
                 Toast.makeText(this@CheckoutActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 btnConfirmar.isEnabled = true
             }
+        }
+    }
+    
+    private suspend fun enviarPedidoOnline(
+        direccion: String,
+        telefono: String,
+        notas: String,
+        detalles: List<PedidoDetalleRequest>
+    ) {
+        try {
+            val request = CrearPedidoRequest(
+                clienteId = clienteId!!,
+                direccionId = direccionSeleccionada?.idDirecciones,
+                direccionEntrega = direccion,
+                telefono = telefono,
+                notas = notas,
+                metodoPago = "EFECTIVO",
+                latitud = latitudSeleccionada,
+                longitud = longitudSeleccionada,
+                detalles = detalles
+            )
+
+            val api = NetworkClient.createService(PedidoApiService::class.java)
+            val response = api.crearPedido(request)
+
+            // Limpiar carrito
+            database.carritoDao().clearCarrito()
+
+            // Mostrar éxito
+            AlertDialog.Builder(this@CheckoutActivity)
+                .setTitle("✅ Pedido Confirmado")
+                .setMessage("Tu pedido #${response.id} ha sido creado exitosamente.\n\nEstado: ${response.estado}")
+                .setPositiveButton("Ver Mis Pedidos") { _, _ ->
+                    startActivity(android.content.Intent(this@CheckoutActivity, MisPedidosActivity::class.java))
+                    finish()
+                }
+                .setNegativeButton("Volver al Inicio") { _, _ ->
+                    startActivity(android.content.Intent(this@CheckoutActivity, HomeActivity::class.java))
+                    finishAffinity()
+                }
+                .setCancelable(false)
+                .show()
+        } catch (e: Exception) {
+            Toast.makeText(this@CheckoutActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+            btnConfirmar.isEnabled = true
+        }
+    }
+    
+    private suspend fun guardarPedidoOffline(
+        direccion: String,
+        telefono: String,
+        notas: String,
+        detalles: List<PedidoDetalleRequest>,
+        total: Double
+    ) {
+        try {
+            val syncManager = com.example.doloresapp.data.sync.SyncManager.getInstance(this@CheckoutActivity)
+            
+            val pedidoLocalId = syncManager.savePendingOrder(
+                clienteId = clienteId!!,
+                direccionId = direccionSeleccionada?.idDirecciones,
+                direccionEntrega = direccion,
+                telefono = telefono,
+                notas = notas,
+                metodoPago = "EFECTIVO",
+                latitud = latitudSeleccionada,
+                longitud = longitudSeleccionada,
+                detalles = detalles,
+                total = total
+            )
+
+            // Limpiar carrito
+            database.carritoDao().clearCarrito()
+
+            // Mostrar mensaje de pedido guardado offline
+            AlertDialog.Builder(this@CheckoutActivity)
+                .setTitle("📱 Pedido Guardado")
+                .setMessage("Tu pedido ha sido guardado localmente.\n\n" +
+                    "⚠️ Sin conexión a internet\n\n" +
+                    "El pedido se enviará automáticamente cuando tengas conexión.\n\n" +
+                    "Total: S/ %.2f".format(total))
+                .setPositiveButton("Entendido") { _, _ ->
+                    startActivity(android.content.Intent(this@CheckoutActivity, HomeActivity::class.java))
+                    finishAffinity()
+                }
+                .setCancelable(false)
+                .show()
+                
+        } catch (e: Exception) {
+            Toast.makeText(this@CheckoutActivity, "Error guardando pedido: ${e.message}", Toast.LENGTH_LONG).show()
+            btnConfirmar.isEnabled = true
         }
     }
 

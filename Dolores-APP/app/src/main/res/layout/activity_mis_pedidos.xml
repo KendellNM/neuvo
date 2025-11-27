@@ -101,12 +101,73 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        
+        <!-- Sección de pedidos pendientes de sincronización -->
+        <LinearLayout
+            android:id="@+id/layoutPendientes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#FFF8E1"
+            android:padding="12dp"
+            android:gravity="center_vertical"
+            android:visibility="gone">
+            
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📱 Pedidos sin sincronizar"
+                    android:textColor="#F57C00"
+                    android:textStyle="bold"
+                    android:textSize="14sp" />
+                    
+                <TextView
+                    android:id="@+id/tvPendientesCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0 pedido(s) esperando conexión"
+                    android:textColor="#FF8F00"
+                    android:textSize="12sp" />
+            </LinearLayout>
+            
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSincronizar"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Sincronizar"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                app:cornerRadius="8dp"
+                style="@style/Widget.MaterialComponents.Button.TextButton" />
+        </LinearLayout>
+        
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <!-- Estado vacío -->
+        <TextView
+            android:id="@+id/tvEmpty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="No tienes pedidos aún"
+            android:textSize="16sp"
+            android:textColor="#757575"
+            android:visibility="gone" />
+            
         <LinearLayout
             android:id="@+id/emptyState"
             android:layout_width="match_parent"
@@ -172,5 +233,7 @@
             android:layout_gravity="center"
             android:visibility="gone" />
     </FrameLayout>
+    
+    </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

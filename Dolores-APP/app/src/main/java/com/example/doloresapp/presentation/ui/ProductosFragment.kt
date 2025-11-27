@@ -21,7 +21,11 @@ import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import com.example.doloresapp.domain.model.Producto
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import com.example.doloresapp.data.cart.CartRepository
+import com.example.doloresapp.utils.NetworkUtils
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class ProductosFragment : Fragment(R.layout.listproducts_layout) {
     private val productosViewModel: ProductosViewModel by viewModels {
@@ -30,7 +34,8 @@ class ProductosFragment : Fragment(R.layout.listproducts_layout) {
             ServiceLocator.getCategoriasUseCase()
         )
     }
-
+    
+    private var tvOfflineMode: TextView? = null
 
     private fun openProductDetail(producto: Producto) {
         val fragment = ProductDetailFragment.newInstance(producto)
@@ -48,6 +53,11 @@ class ProductosFragment : Fragment(R.layout.listproducts_layout) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         Log.d("ProductosFragment", "onViewCreated(): iniciado")
+        
+        // Indicador de modo offline
+        tvOfflineMode = view.findViewById(R.id.tvOfflineMode)
+        observeNetworkState()
+        
         // Configuración del RecyclerView
         adapter = EnhancedProductosAdapter(
             productos = emptyList(),
@@ -138,6 +148,14 @@ class ProductosFragment : Fragment(R.layout.listproducts_layout) {
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+    
+    private fun observeNetworkState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            NetworkUtils.observeNetworkState(requireContext()).collectLatest { isConnected ->
+                tvOfflineMode?.visibility = if (isConnected) View.GONE else View.VISIBLE
+            }
+        }
+    }
 
     private fun filterAndUpdate() {
         val countView: TextView? = view?.findViewById(R.id.products_count)

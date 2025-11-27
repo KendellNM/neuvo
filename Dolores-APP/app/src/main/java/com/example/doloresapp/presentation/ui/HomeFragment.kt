@@ -3,25 +3,43 @@ package com.example.doloresapp.presentation.ui
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.Fragment
-import com.example.doloresapp.R
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.doloresapp.LoginActivity
+import com.example.doloresapp.R
 import com.example.doloresapp.data.local.TokenStore
 import com.example.doloresapp.data.remote.NetworkClient
 import com.example.doloresapp.data.remote.UserApi
+import com.example.doloresapp.data.sync.SyncManager
 import com.example.doloresapp.utils.ApiConstants
+import com.example.doloresapp.utils.NetworkUtils
 import com.example.doloresapp.utils.RoleManager
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment(R.layout.home_screen) {
+    
+    private var bannerOffline: LinearLayout? = null
+    private var tvPendingOrders: TextView? = null
+    
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         // Obtener referencia al TextView de bienvenida
         val tvWelcome: TextView? = view.findViewById(R.id.tvWelcome)
+        
+        // Referencias para modo offline
+        bannerOffline = view.findViewById(R.id.bannerOffline)
+        tvPendingOrders = view.findViewById(R.id.tvPendingOrders)
+        
+        // Observar estado de conexión
+        observeNetworkState()
+        
+        // Observar pedidos pendientes
+        observePendingOrders()
 
         // Llamar al endpoint para obtener el usuario actual y actualizar el saludo
         viewLifecycleOwner.lifecycleScope.launch {
@@ -66,6 +84,28 @@ class HomeFragment : Fragment(R.layout.home_screen) {
         // Botón de cerrar sesión
         view.findViewById<View>(R.id.btnLogout)?.setOnClickListener {
             showLogoutDialog()
+        }
+    }
+    
+    private fun observeNetworkState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            NetworkUtils.observeNetworkState(requireContext()).collectLatest { isConnected ->
+                bannerOffline?.visibility = if (isConnected) View.GONE else View.VISIBLE
+            }
+        }
+    }
+    
+    private fun observePendingOrders() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val syncManager = SyncManager.getInstance(requireContext())
+            syncManager.pendingCount.collectLatest { count ->
+                if (count > 0) {
+                    tvPendingOrders?.visibility = View.VISIBLE
+                    tvPendingOrders?.text = "• $count pedido(s) pendiente(s)"
+                } else {
+                    tvPendingOrders?.visibility = View.GONE
+                }
+            }
         }
     }
 

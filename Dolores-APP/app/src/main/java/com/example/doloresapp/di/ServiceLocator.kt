@@ -1,7 +1,9 @@
 package com.example.doloresapp.di
 
+import android.content.Context
 import com.example.doloresapp.data.remote.service.ProductoApiService
 import com.example.doloresapp.data.remote.api.*
+import com.example.doloresapp.data.repository.OfflineProductoRepository
 import com.example.doloresapp.data.repository.ProductoRepositoryImpl
 import com.example.doloresapp.domain.repository.ProductoRepository
 import com.example.doloresapp.domain.usecase.GetCategoriasUseCase
@@ -16,6 +18,12 @@ object ServiceLocator {
     private var repository: ProductoRepository? = null
     
     @Volatile
+    private var offlineRepository: OfflineProductoRepository? = null
+    
+    @Volatile
+    private var appContext: Context? = null
+    
+    @Volatile
     private var qrApiService: QRApiService? = null
     
     @Volatile
@@ -26,6 +34,14 @@ object ServiceLocator {
     
     @Volatile
     private var notificacionApiService: NotificacionApiService? = null
+    
+    /**
+     * Inicializa el ServiceLocator con el contexto de la aplicación
+     * Llamar desde Application.onCreate()
+     */
+    fun init(context: Context) {
+        appContext = context.applicationContext
+    }
 
     fun getApiService(): ProductoApiService {
         return apiService ?: synchronized(this) {
@@ -34,8 +50,22 @@ object ServiceLocator {
     }
 
     fun getRepository(): ProductoRepository {
+        // Si tenemos contexto, usar el repositorio offline
+        appContext?.let { ctx ->
+            return getOfflineRepository(ctx)
+        }
+        // Fallback al repositorio original si no hay contexto
         return repository ?: synchronized(this) {
             repository ?: ProductoRepositoryImpl(getApiService()).also { repository = it }
+        }
+    }
+    
+    fun getOfflineRepository(context: Context): OfflineProductoRepository {
+        return offlineRepository ?: synchronized(this) {
+            offlineRepository ?: OfflineProductoRepository(
+                context.applicationContext,
+                getApiService()
+            ).also { offlineRepository = it }
         }
     }
 

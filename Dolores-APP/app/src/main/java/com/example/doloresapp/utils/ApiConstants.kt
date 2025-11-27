@@ -2,13 +2,13 @@ package com.example.doloresapp.utils
 
 object ApiConstants {
     // Base URL - Cambiar según entorno
-    const val BASE_URL = "http://192.168.1.3:8090/" // Dispositivo físico en red local
+    const val BASE_URL = "http://172.17.26.34:8090/" // Dispositivo físico en red local
     // const val BASE_URL = "http://10.0.2.2:8090/" // Android Emulator
     // const val BASE_URL = "http://localhost:8090/" // Para testing local
     // const val BASE_URL = "https://api.farmaciadolores.com/" // Producción
     
     // WebSocket
-    const val WEBSOCKET_URL = "ws://192.168.1.3:8090/ws-delivery"
+    const val WEBSOCKET_URL = "ws://172.17.26.34:8090/ws-delivery"
     
     // Endpoints
     object Auth {

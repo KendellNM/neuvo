@@ -15,9 +15,11 @@ import com.example.doloresapp.data.local.entity.*
         NotificacionEntity::class,
         RecetaDigitalEntity::class,
         UbicacionDeliveryEntity::class,
-        CarritoItem::class
+        CarritoItem::class,
+        CategoriaEntity::class,
+        PedidoPendienteEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -29,6 +31,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun recetaDigitalDao(): RecetaDigitalDao
     abstract fun ubicacionDeliveryDao(): UbicacionDeliveryDao
     abstract fun carritoDao(): CarritoDao
+    abstract fun categoriaDao(): CategoriaDao
+    abstract fun pedidoPendienteDao(): PedidoPendienteDao
     
     companion object {
         @Volatile
